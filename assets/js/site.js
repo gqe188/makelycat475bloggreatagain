@@ -135,7 +135,11 @@
       for (var d = 0; d <= 9; d++) strip += '<i>' + d + '</i>';
       return '<span class="odo" aria-hidden="true"><span class="odo-s" style="--n:' + c + ';--k:' + (k++) + '">' + strip + '</span></span>';
     }).join('');
-    whenSeen(dd.closest('[data-rev]') || dd, function () { dd.classList.add('roll'); });
+    whenSeen(dd.closest('[data-rev]') || dd, function () {
+      dd.classList.add('roll');
+      // 滚完后换回纯文本：小数行高（1.2em）逐行累计会有亚像素偏差，最后几位会歪
+      setTimeout(function () { target.textContent = txt; }, 120 + k * 70 + 1150);
+    });
   });
 
   /* 阅读进度：按文章区域的滚动比例 */
