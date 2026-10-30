@@ -1,30 +1,66 @@
 {{ define "main" }}
+{{ $isPost := eq .Section "posts" }}
 {{ $chars := .Content | plainify | countrunes }}
-<article class="post">
-  <header class="post-head">
-    <h1>{{ .Title }}</h1>
+{{ $no := cond $isPost (partial "entry-no.html" .) "" }}
+<article class="spread" aria-labelledby="page-title">
+  {{ partial "cropmarks.html" }}
+  <header class="rh" data-rev>
+    {{ if $isPost }}<span class="no">{{ $no }}</span><span class="ti">文章 · Entry</span>
+    {{ else }}{{ $mno := "" }}{{ range $i, $m := site.Menus.main }}{{ if and $m.Page (eq $m.Page.RelPermalink $.RelPermalink) }}{{ $mno = printf "%02d" (add $i 1) }}{{ end }}{{ end }}
+    {{ with $mno }}<span class="no">{{ . }}</span>{{ end }}<span class="ti">{{ .Title }}{{ with .Section }} · {{ . }}{{ end }}</span>{{ end }}
+    <span class="en">{{ site.Params.author }}</span>
+  </header>
+
+  <header class="post-head g">
+    <div class="c1-7">
+      <h1 class="t-display cjk" id="page-title" data-rev>{{ .Title }}</h1>
+    </div>
     {{ if not .Date.IsZero }}
-    <p class="meta">
-      {{ .Date.Format "2006.01.02" }}
-      {{ with .Params.tags }} · {{ delimit . " / " }}{{ end }}
-      <span class="meta-sep">/</span> {{ $chars }} 字
-    </p>
+    <dl class="spec c9-12" data-rev style="--d:80ms">
+      {{ if $isPost }}<dt>编号 No.</dt><dd class="hot">{{ $no }}</dd>{{ end }}
+      <dt>日期 Date</dt><dd><time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006.01.02" }}</time></dd>
+      {{ with .Params.tags }}<dt>标签 Tags</dt><dd>{{ delimit . " / " }}</dd>{{ end }}
+      <dt>字数 Length</dt><dd>{{ $chars }}</dd>
+      {{ if ne (.Lastmod.Format "2006-01-02") (.Date.Format "2006-01-02") }}<dt>修订 Rev.</dt><dd>{{ .Lastmod.Format "2006.01.02" }}</dd>{{ end }}
+    </dl>
     {{ end }}
   </header>
-  <div class="prose">
-    {{ .Content }}
+
+  <div class="g">
+    <div class="c1-7">
+      <div class="prose" data-rev style="--d:140ms">
+        {{ .Content }}
+      </div>
+      {{ with .Params.github }}
+      <p class="page-cta"><a class="btn" href="{{ . }}" rel="me noopener" target="_blank">GitHub ↗ <small>{{ strings.TrimPrefix "https://" . }}</small></a></p>
+      {{ end }}
+      {{ if $isPost }}
+      <div class="sign" data-rev>
+        <span class="stamp">{{ site.Params.signNote }}</span>
+        <span class="reg" aria-hidden="true"><i></i><b></b></span>
+      </div>
+      {{ end }}
+    </div>
+    {{ $toc := .TableOfContents }}
+    {{ if or (gt (len (findRE "<li>" $toc)) 1) $isPost }}
+    <aside class="c9-12 side" data-rev style="--d:200ms">
+      {{ if gt (len (findRE "<li>" $toc)) 1 }}
+      <div class="sidenote"><b>目录</b>Contents{{ $toc }}</div>
+      {{ end }}
+      {{ if $isPost }}
+      <p class="sidenote"><b>注</b>本篇正文 {{ $chars }} 字{{ with .ReadingTime }}，约 {{ . }} 分钟读完{{ end }}。</p>
+      {{ end }}
+    </aside>
+    {{ end }}
   </div>
-  {{ with .Params.github }}
-  <p class="page-cta"><a class="btn" href="{{ . }}" rel="me" target="_blank">GitHub ↗</a></p>
+
+  {{ if and $isPost (or .PrevInSection .NextInSection) }}
+  <nav class="post-nav" aria-label="上一篇 / 下一篇">
+    {{ with .PrevInSection }}<a href="{{ .RelPermalink }}"><span class="t-micro">← 上一篇 · {{ partial "entry-no.html" . }}</span><span>{{ .Title }}</span></a>{{ end }}
+    {{ with .NextInSection }}<a class="next" href="{{ .RelPermalink }}"><span class="t-micro">下一篇 · {{ partial "entry-no.html" . }} →</span><span>{{ .Title }}</span></a>{{ end }}
+  </nav>
   {{ end }}
-  {{ if eq .Section "posts" }}{{ partial "sign.html" . }}{{ end }}
+
+  <div class="folio"><span>{{ site.Params.h1 }} / {{ cond $isPost $no .Title }}</span><span>{{ if not .Date.IsZero }}{{ .Date.Format "2006.01.02" }}{{ end }}</span></div>
 </article>
-
-{{ if and (eq .Section "posts") (or .PrevInSection .NextInSection) }}
-<nav class="post-nav">
-  {{ with .PrevInSection }}<a href="{{ .RelPermalink }}"><span class="muted">← 上一篇</span><span>{{ .Title }}</span></a>{{ end }}
-  {{ with .NextInSection }}<a class="post-nav-next" href="{{ .RelPermalink }}"><span class="muted">下一篇 →</span><span>{{ .Title }}</span></a>{{ end }}
-</nav>
-{{ end }}
-
 {{ end }}

@@ -3,52 +3,62 @@
 <head>
   {{ partial "head.html" . }}
   {{ if site.Params.holding }}<meta name="robots" content="noindex, nofollow">{{ end }}
-<noscript><style>.theme-toggle{display:none}</style></noscript>
 </head>
 {{ if site.Params.holding }}
-<body class="holding-body">
-  <div class="holding">
-    <img class="mark mark-lg" src="{{ printf "%s?v=%s" ("peng.png" | relURL) (partial "asset-v.html" "peng.png") }}" alt="" width="64" height="64">
-    <h1 class="meow">{{ site.Params.holdingTitle }}</h1>
-    <p class="muted meow">{{ site.Params.holdingNote }}</p>
-  </div>
+<body>
+  <main class="doc holding">
+    <section class="spread">
+      {{ partial "cropmarks.html" }}
+      <header class="rh"><span class="no">00</span><span class="ti">准备中 · Pending</span><span class="en">{{ site.Title }}</span></header>
+      <h1 class="t-display cjk">{{ site.Params.holdingTitle }}</h1>
+      <p class="t-lead" style="margin-top:24px">{{ site.Params.holdingNote }}</p>
+    </section>
+  </main>
 </body>
 {{ else }}
-{{ $wide := or .IsHome (eq .Section "gallery") .Params.wide }}
-<body{{ if $wide }} class="wide"{{ end }}>
+<body>
   <a class="skip" href="#main">跳到正文</a>
-  <header class="site-head">
-    <a class="site-name" href="{{ "/" | relURL }}">{{ site.Params.name }}</a>
-    <nav class="site-nav">
-      {{ range site.Menus.main }}
-        {{ $u := .URL | relURL }}
-        <a href="{{ $u }}"{{ if eq $u $.RelPermalink }} aria-current="page"{{ end }}>{{ .Name }}</a>
-      {{ end }}
-      <button class="theme-toggle" type="button" aria-label="切换亮色/暗色" title="切换亮色/暗色"></button>
-    </nav>
+  <div class="binding" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="helix" aria-hidden="true"></div>
+
+  <header class="mh">
+    <div class="mh-in">
+      {{/* 三行字标：大字名 / 通栏小字 / 细 + 粗 的类别行 */}}
+      <a class="logo" href="{{ "/" | relURL }}" aria-label="{{ site.Params.name }} 首页">
+        <b>{{ site.Params.h1 }}</b>
+        <small>Personal Records</small>
+        <span>Archive <b>Blog</b></span>
+      </a>
+      <nav class="mh-nav" aria-label="主导航">
+        {{ range $i, $m := site.Menus.main }}
+          {{ $u := $m.URL | relURL }}
+          {{ $cur := or (eq $u $.RelPermalink) (and $m.Page (or ($.IsDescendant $m.Page) (eq $.FirstSection $m.Page))) }}
+          <a href="{{ $u }}"{{ if $cur }} aria-current="page"{{ end }}><span class="en">{{ $m.Params.en | default $m.Name }}</span><span class="zh">{{ $m.Name }}</span></a>
+        {{ end }}
+      </nav>
+      <button class="theme-btn" type="button" aria-label="切换亮色 / 暗色"></button>
+    </div>
+    {{ if and .IsPage (eq .Section "posts") }}<div class="readbar" aria-hidden="true"></div>{{ end }}
   </header>
 
-  <div id="swup" class="transition-main">
-    {{ block "masthead" . }}{{ end }}
+  <main id="main" class="doc">
+    {{ block "main" . }}{{ end }}
+  </main>
 
-    <main id="main" class="wrap"{{ if $wide }} data-wide="1"{{ end }}>
-      {{ block "main" . }}{{ end }}
-    </main>
-  </div>
-
-  <footer class="site-foot">
+  <footer class="colophon">
+    <span class="colorbar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+    <span class="reg" aria-hidden="true"><i></i><b></b></span>
     <span>© {{ now.Year }} {{ site.Params.author }}</span>
-    <span class="foot-links">
-      <a href="{{ "index.xml" | relURL }}" data-no-swup>RSS</a>
-      <a href="{{ "sitemap.xml" | relURL }}" data-no-swup>Sitemap</a>
+    <span>Built {{ now.Format "2006.01.02" }}</span>
+    <span class="links">
+      <a href="{{ "index.xml" | relURL }}">RSS</a>
+      <a href="{{ "sitemap.xml" | relURL }}">Sitemap</a>
     </span>
+    <span class="powered">Powered by <b>Hugo</b> <i aria-hidden="true"></i></span>
   </footer>
 
-  <script src="{{ "vendor/swup/swup.umd.js" | relURL }}" defer></script>
-  <script src="{{ "vendor/swup/preload-umd.js" | relURL }}" defer></script>
-  <script src="{{ "vendor/swup/scroll-umd.js" | relURL }}" defer></script>
-  <script src="{{ "vendor/swup/progress-umd.js" | relURL }}" defer></script>
-  <script src="{{ "js/site.js" | relURL }}" defer></script>
+  {{ $js := resources.Get "js/site.js" | minify | fingerprint }}
+  <script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>
 </body>
 {{ end }}
 </html>

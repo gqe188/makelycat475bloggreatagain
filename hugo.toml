@@ -23,11 +23,15 @@ disableKinds = ['taxonomy', 'term']
   holdingTitle = '还没准备好喵'
   holdingNote = '摸鱼好爽喵~ 噫噫噫补药电窝了本喵马上就干活喵'
 
+[markup.tableOfContents]
+  startLevel = 2
+  endLevel = 3
+
 [markup.goldmark.renderer]
   unsafe = false
 
 [markup.highlight]
-  style = 'solarized-light'
+  # 颜色由 assets/css/main.css 的 .chroma 规则决定
   noClasses = false
   lineNos = false
 
@@ -35,11 +39,17 @@ disableKinds = ['taxonomy', 'term']
   name = '归档'
   pageRef = '/posts'
   weight = 10
+  [menus.main.params]
+    en = 'ARCHIVE'
 [[menus.main]]
   name = '相册'
   pageRef = '/gallery'
   weight = 20
+  [menus.main.params]
+    en = 'PLATES'
 [[menus.main]]
   name = '关于'
   pageRef = '/about'
   weight = 30
+  [menus.main.params]
+    en = 'ABOUT'

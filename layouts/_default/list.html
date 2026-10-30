@@ -1,32 +1,45 @@
 {{ define "main" }}
-<header class="page-head">
-  <h1>{{ .Title }}</h1>
-  {{ with .Content }}<div class="lede">{{ . }}</div>{{ end }}
-</header>
-
 {{ $paginator := .Paginate .Pages }}
-{{ range $paginator.Pages.GroupByDate "2006" }}
-<section class="year">
-  <h2 class="year-label">{{ .Key }}</h2>
-  <ul class="archive">
-    {{ range .Pages }}
-      <li class="archive-row">
-        <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "01.02" }}</time>
-        <div>
-          <a class="archive-title" href="{{ .RelPermalink }}">{{ .Title }}</a>
-          {{ with .Summary }}<p class="archive-sum">{{ . | plainify | truncate 90 }}</p>{{ end }}
-        </div>
-      </li>
-    {{ end }}
-  </ul>
-</section>
-{{ end }}
+<section class="spread" aria-labelledby="page-title">
+  {{ partial "cropmarks.html" }}
+  <header class="rh" data-rev><span class="no">01</span><span class="ti">归档 · Archive</span><span class="en">{{ len .Pages }} entries</span></header>
+  <div class="g">
+    <div class="c1-3">
+      <p class="index-count" data-rev aria-hidden="true"><span class="t-outline">{{ printf "%02d" (len .Pages) }}</span><span class="t-cap">Entries / 篇</span></p>
+      <h1 class="t-h1 page-title" id="page-title" data-rev>{{ .Title }}</h1>
+      {{ with .Content }}<div class="t-body" data-rev>{{ . }}</div>{{ end }}
+      <p class="sidenote" style="margin-top:40px" data-rev><b>注 01</b>按年份倒序排列；右侧为发表日期。</p>
+    </div>
+    <div class="c4-12">
+      {{ range $paginator.Pages.GroupByDate "2006" }}
+      <section class="year">
+        <h2 class="year-no">{{ .Key }}</h2>
+        <ol class="toc">
+          {{ range $i, $p := .Pages }}
+            <li data-rev style="--d:{{ mul $i 70 }}ms">
+              <a href="{{ $p.RelPermalink }}">
+                <span class="no">{{ partial "entry-no.html" $p }}</span>
+                <span class="ti">{{ $p.Title }}</span>
+                <time class="dt" datetime="{{ $p.Date.Format "2006-01-02" }}">{{ $p.Date.Format "01.02" }}</time>
+                {{ with $p.Summary | plainify | htmlUnescape | strings.TrimSpace }}<span class="sum">{{ . | truncate 90 }}</span>{{ end }}
+              </a>
+            </li>
+          {{ end }}
+        </ol>
+      </section>
+      {{ else }}
+        <p class="toc-empty">空空如也喵</p>
+      {{ end }}
 
-{{ if gt $paginator.TotalPages 1 }}
-<nav class="pager">
-  {{ with $paginator.Prev }}<a href="{{ .URL }}">← 新一点的</a>{{ end }}
-  <span class="muted">{{ $paginator.PageNumber }} / {{ $paginator.TotalPages }}</span>
-  {{ with $paginator.Next }}<a href="{{ .URL }}">旧一点的 →</a>{{ end }}
-</nav>
-{{ end }}
+      {{ if gt $paginator.TotalPages 1 }}
+      <nav class="pager" aria-label="分页">
+        {{ with $paginator.Prev }}<a href="{{ .URL }}">← 新一点的</a>{{ else }}<span></span>{{ end }}
+        <span class="muted">{{ printf "%02d" $paginator.PageNumber }} / {{ printf "%02d" $paginator.TotalPages }}</span>
+        {{ with $paginator.Next }}<a href="{{ .URL }}">旧一点的 →</a>{{ else }}<span></span>{{ end }}
+      </nav>
+      {{ end }}
+    </div>
+  </div>
+  <div class="folio"><span>{{ site.Params.h1 }} / Archive</span><span>P.{{ printf "%02d" $paginator.PageNumber }} / {{ printf "%02d" $paginator.TotalPages }}</span></div>
+</section>
 {{ end }}

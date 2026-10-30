@@ -1,90 +1,124 @@
-{{ define "masthead" }}
-{{ $gallery := site.GetPage "/gallery" }}
-{{ $imgs := slice }}
-{{ with $gallery }}{{ $imgs = .Resources.ByType "image" }}{{ end }}
-{{ $posts := where site.RegularPages "Section" "posts" }}
-
-{{ with resources.Get "img/masthead.webp" }}
-  {{ $large := .Resize "2000x webp q80" }}
-  {{ $small := .Resize "1000x webp q76" }}
-  <section class="masthead">
-    <div class="masthead-media">
-      <img
-        src="{{ $large.RelPermalink }}"
-        srcset="{{ $small.RelPermalink }} 1000w, {{ $large.RelPermalink }} 2000w"
-        sizes="100vw"
-        alt=""
-        width="{{ $large.Width }}" height="{{ $large.Height }}"
-        fetchpriority="high" decoding="async">
-      <img
-        class="masthead-blur"
-        src="{{ $large.RelPermalink }}"
-        srcset="{{ $small.RelPermalink }} 1000w, {{ $large.RelPermalink }} 2000w"
-        sizes="100vw"
-        alt="" aria-hidden="true"
-        width="{{ $large.Width }}" height="{{ $large.Height }}"
-        decoding="async">
-    </div>
-    <div class="masthead-text">
-      <div class="wrap">
-        <span class="kicker">RECORDS</span>
-        <h1>{{ site.Params.h1 }}</h1>
-        <p class="lede">{{ site.Params.intro }}</p>
-        <p class="stats">
-          <span>{{ printf "%02d" (len $posts) }} 篇文章</span>
-          <span class="sep">/</span>
-          <span>{{ printf "%02d" (len $imgs) }} 张照片</span>
-        </p>
-      </div>
-    </div>
-  </section>
-{{ else }}
-  <section class="identity wrap">
-    <span class="kicker">RECORDS</span>
-    <h1>{{ site.Params.h1 }}</h1>
-    <p class="lede">{{ site.Params.intro }}</p>
-  </section>
-{{ end }}
-{{ end }}
-
 {{ define "main" }}
 {{ $posts := where site.RegularPages "Section" "posts" }}
 {{ $gallery := site.GetPage "/gallery" }}
+{{ $imgs := slice }}
+{{ with $gallery }}{{ $imgs = .Resources.ByType "image" }}{{ end }}
+{{ $latest := "—" }}
+{{ $newest := index $posts 0 }}
+{{ with $newest }}{{ $latest = .Date.Format "2006.01.02" }}{{ end }}
 
-<section class="block">
-  <div class="label-row">
-    <h2 class="label">文章</h2>
-    {{ if gt (len $posts) 5 }}<a class="label-link" href="{{ "/posts/" | relURL }}">全部</a>{{ end }}
-  </div>
-  <ol class="index">
-    {{ range $i, $p := first 5 $posts }}
-      <li class="index-row">
-        <span class="index-no">{{ printf "%02d" (add $i 1) }}</span>
-        <time datetime="{{ $p.Date.Format "2006-01-02" }}">{{ $p.Date.Format "2006.01.02" }}</time>
-        <div class="index-main">
-          <a href="{{ $p.RelPermalink }}">{{ $p.Title }}</a>
-          {{ with $p.Summary }}<p class="index-sum">{{ . | plainify | truncate 90 }}</p>{{ end }}
+{{/* ── P.01 封面：一个大字锚点 + 规格表 + 报头照片的网点图版 ── */}}
+<section class="spread cover" aria-labelledby="cover-title">
+  {{ partial "cropmarks.html" }}
+  <span class="fold" aria-hidden="true"><em>FOLD</em></span>
+  <header class="rh" data-rev><span class="no">00</span><span class="ti">封面 · Cover</span><span class="en">{{ site.Params.name }}</span></header>
+  <p class="t-cap" data-rev style="--d:60ms">Records / 记录</p>
+  <h1 class="t-cover" id="cover-title" data-rev style="--d:120ms">{{ site.Params.h1 }}</h1>
+  <div class="g">
+    <div class="c1-7">
+      <p class="t-lead" data-rev style="--d:180ms">{{ site.Params.intro }}</p>
+      <dl class="spec" data-rev style="--d:240ms">
+        <dt>文章 Entries</dt><dd class="hot">{{ printf "%02d" (len $posts) }}</dd>
+        <dt>图版 Plates</dt><dd>{{ printf "%02d" (len $imgs) }}</dd>
+        <dt>最近 Latest</dt><dd>{{ $latest }}</dd>
+        <dt>作者 Author</dt><dd>{{ site.Params.author }}</dd>
+      </dl>
+    </div>
+    {{ with resources.Get "img/masthead.webp" }}
+    {{ $src := .Resize "1000x webp q80" }}
+    <figure class="c9-12 cover-plate" data-rev style="--d:300ms">
+      <span class="tape" aria-hidden="true"></span>
+      {{ with $newest }}
+      <a class="sticker" href="{{ .RelPermalink }}"><b>最新 · {{ partial "entry-no.html" . }}</b><span>{{ .Title }}</span><span class="mono">{{ .Date.Format "2006.01.02" }}</span></a>
+      {{ end }}
+      <a class="plate-link" href="{{ "/gallery/" | relURL }}" aria-label="报头照片，前往相册">
+        <div class="plate" style="aspect-ratio:{{ .Width }}/{{ .Height }}">
+          <span class="plate-tag">PL.00</span>
+          <canvas class="ht" data-src="{{ $src.RelPermalink }}" aria-hidden="true"></canvas>
+          <noscript><img src="{{ $src.RelPermalink }}" alt="" width="{{ $src.Width }}" height="{{ $src.Height }}"></noscript>
         </div>
-      </li>
-    {{ else }}
-      <li class="index-row"><span class="index-no">—</span><span></span><span class="muted meow">空空如也喵</span></li>
+      </a>
+      <figcaption class="figcap"><b>PL.00</b><span>报头 · 45° 单色网点<br>Masthead, halftone</span></figcaption>
+    </figure>
     {{ end }}
-  </ol>
+  </div>
+  <div class="folio"><span>{{ site.Params.h1 }} / Cover</span><span>P.01 / 03</span></div>
 </section>
 
-{{ with $gallery }}
-{{ $imgs := .Resources.ByType "image" }}
-<section class="block block-last">
-  <div class="label-row">
-    <h2 class="label">相册</h2>
-    <a class="label-link" href="{{ "/gallery/" | relURL }}">全部 {{ len $imgs }} 张 →</a>
-  </div>
-  <a class="thumb-row" href="{{ "/gallery/" | relURL }}" aria-label="查看相册">
-    {{ range first 5 $imgs }}
-      {{ $t := .Resize "92x92 Center webp q78" }}
-      <img src="{{ $t.RelPermalink }}" alt="" width="46" height="46" loading="lazy" decoding="async">
+{{/* ── P.02 索引：文章目录 7 栏 + 相册小样 5 栏 ── */}}
+<section class="spread" aria-labelledby="index-title">
+  {{ partial "cropmarks.html" }}
+  <header class="rh" data-rev><span class="no">01</span><span class="ti" id="index-title">索引 · Index</span><span class="en">{{ len $posts }} entries / {{ len $imgs }} plates</span></header>
+  <div class="g">
+    <div class="c1-7">
+      <p class="index-count" data-rev aria-hidden="true"><span class="t-outline">{{ printf "%02d" (len $posts) }}</span><span class="t-cap">Entries / 篇</span></p>
+      <div class="sec-head">
+        <h2 class="t-h2">文章</h2>
+        <a href="{{ "/posts/" | relURL }}">全部归档 →</a>
+      </div>
+      <ol class="toc">
+        {{ range $i, $p := first 6 $posts }}
+          <li data-rev style="--d:{{ mul $i 70 }}ms">
+            <a href="{{ $p.RelPermalink }}">
+              <span class="no">{{ partial "entry-no.html" $p }}</span>
+              <span class="ti">{{ $p.Title }}</span>
+              <time class="dt" datetime="{{ $p.Date.Format "2006-01-02" }}">{{ $p.Date.Format "2006.01.02" }}</time>
+              {{ with $p.Summary | plainify | htmlUnescape | strings.TrimSpace }}<span class="sum">{{ . | truncate 90 }}</span>{{ end }}
+            </a>
+          </li>
+        {{ else }}
+          <li class="toc-empty">空空如也喵</li>
+        {{ end }}
+      </ol>
+    </div>
+    {{ with $gallery }}
+    <aside class="c9-12">
+      <div class="sec-head">
+        <h2 class="t-h2">相册</h2>
+        <a href="{{ .RelPermalink }}">全部 {{ len $imgs }} 张 →</a>
+      </div>
+      {{ if $imgs }}
+      <a class="contact plate-link" href="{{ .RelPermalink }}" aria-label="查看相册">
+        {{ range $i, $img := first 6 $imgs }}
+          {{ $t := $img.Fill "240x240 Center webp q76" }}
+          <div class="plate" data-rev style="--d:{{ mul $i 60 }}ms"><img src="{{ $t.RelPermalink }}" alt="" width="120" height="120" loading="lazy" decoding="async"></div>
+        {{ end }}
+      </a>
+      <p class="figcap"><b>PL.01–{{ printf "%02d" (len (first 6 $imgs)) }}</b><span>相册小样<br>Contact sheet</span></p>
+      {{ end }}
+      <p class="sidenote" style="margin-top:40px"><b>注 01</b>编号即次序：文章按发表时间记为 E.001 起，照片按文件顺序记为 PL.01 起。</p>
+    </aside>
     {{ end }}
-  </a>
+  </div>
+  <div class="folio"><span>{{ site.Params.h1 }} / Index</span><span>P.02 / 03</span></div>
 </section>
-{{ end }}
+
+{{/* ── P.03 封底：版权页（黑版） ── */}}
+<section class="spread poster" aria-labelledby="colophon-title">
+  {{ partial "cropmarks.html" }}
+  <header class="rh" data-rev><span class="no">03</span><span class="ti" id="colophon-title">版权 · Colophon</span><span class="en">{{ site.BaseURL }}</span></header>
+  <p class="t-outline poster-year" data-rev aria-hidden="true">{{ now.Year }}</p>
+  <div class="colo g">
+    <dl class="c1-3" data-rev style="--d:0ms"><dt>出版 Publish</dt><dd>{{ site.Title }}</dd><dd>作者 {{ site.Params.author }}</dd><dd class="mono">{{ site.BaseURL | strings.TrimPrefix "https://" | strings.TrimSuffix "/" }}</dd></dl>
+    <dl class="c4-6" data-rev style="--d:70ms"><dt>构建 Build</dt><dd>Hugo {{ hugo.Version }}</dd><dd class="mono">{{ now.Format "2006.01.02" }}</dd><dd>Cloudflare Pages</dd></dl>
+    <dl class="c7-9" data-rev style="--d:140ms"><dt>字体 Type</dt><dd>JetBrains Mono（自托管，OFL）</dd><dd>中文 / 展示字：系统字体</dd></dl>
+    <dl class="c10-12" data-rev style="--d:210ms"><dt>图像 Images</dt><dd>照片均为作者自摄</dd><dd>导入时剥除 EXIF，长边 2000</dd></dl>
+  </div>
+  <p class="colo-note" data-rev>模板与样式由 AI 生成，文章与照片为作者本人所作。版式借鉴《明日方舟》莱茵生命的同人设计研究，与鹰角网络无关联，不含任何官方图片、Logo 或字体。</p>
+  <div class="folio"><span>{{ site.Params.h1 }} / Colophon</span><span>P.03 / 03</span></div>
+</section>
+
+{{/* 开场装载序列：每个会话只在首页播一次；默认 hidden，由脚本决定是否启用 */}}
+<div class="boot" hidden aria-hidden="true" data-entries="{{ printf "%02d" (len $posts) }}" data-plates="{{ printf "%02d" (len $imgs) }}">
+  <div class="boot-lock"><b>{{ site.Params.h1 }}</b><small>Personal Records</small><span>Archive <b>Blog</b></span></div>
+  <svg class="boot-ring" viewBox="0 0 240 240">
+    <circle class="r1" cx="120" cy="120" r="110" pathLength="100"/>
+    <circle class="r2" cx="120" cy="120" r="44" pathLength="100"/>
+    <g class="orbit"><circle class="dot" cx="120" cy="47" r="3"/><circle class="dot" cx="120" cy="193" r="3"/></g>
+  </svg>
+  <p class="boot-msg"></p>
+  <p class="boot-welcome"><span>Welcome to</span><b>{{ site.Params.h1 }}</b></p>
+  <div class="boot-foot"><span>Powered by <b>Hugo</b> <i></i></span></div>
+  <button class="boot-skip" type="button">Skip ›</button>
+</div>
 {{ end }}
