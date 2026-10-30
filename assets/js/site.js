@@ -73,7 +73,8 @@
   function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
   /* 大标题拆字：逐字淡入上滑（拉丁词整体不断行） */
-  if (motionOn) document.querySelectorAll('.t-display').forEach(function (h) {
+  /* 大标题、栏目标题、镂空巨字：逐字淡入上滑（拉丁词整体不断行） */
+  if (motionOn) document.querySelectorAll('.t-display, .page-title, .t-outline').forEach(function (h) {
     var txt = h.textContent.trim(), i = 0;
     h.setAttribute('aria-label', txt);
     h.innerHTML = txt.split(/(\s+)/).map(function (tok) {
@@ -84,6 +85,39 @@
       return /^[\u0000-ɏ]+$/.test(tok) ? '<span class="w">' + chars + '</span>' : chars;
     }).join('');
     h.classList.add('chars');
+    // 标题逐字先显成墨条，再依次翻成字（中文的“解码”方式，不做乱码）
+    if (!h.classList.contains('t-outline')) {
+      var chs = h.querySelectorAll('.ch');
+      chs.forEach(function (c) { c.classList.add('bar'); });
+      whenSeen(h.closest('[data-rev]') || h, function () {
+        chs.forEach(function (c, j) { setTimeout(function () { c.classList.remove('bar'); }, 320 + j * 90); });
+      });
+    }
+    // 不带 data-rev 的（镂空巨字）跟随所在的入场块一起触发
+    if (!h.hasAttribute('data-rev')) {
+      whenSeen(h.closest('[data-rev]') || h, function () { h.classList.add('in'); });
+    }
+  });
+
+  /* 镂空巨字逐位解码：每一位先闪乱码，再从左到右依次锁定 */
+  var DIGITS = '0123456789#%&*+=/<>';
+  function decodeChar(span, lockAt) {
+    var final = span.textContent, t0 = null;
+    function frame(t) {
+      if (t0 === null) t0 = t;
+      if (t - t0 >= lockAt) { span.textContent = final; return; }
+      span.textContent = DIGITS[Math.floor(hash2(final.charCodeAt(0) + lockAt, Math.floor(t / 40)) * DIGITS.length)];
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+  if (motionOn) document.querySelectorAll('.t-outline').forEach(function (h) {
+    whenSeen(h.closest('[data-rev]') || h, function () {
+      var cs = h.querySelectorAll('.ch');
+      // 先锁住每一位的宽度，乱码字形宽窄不一，不锁会把旁边的图注挤得跳动
+      cs.forEach(function (c) { c.style.width = c.getBoundingClientRect().width + 'px'; c.style.textAlign = 'center'; });
+      cs.forEach(function (c, i) { decodeChar(c, 420 + i * 160); });
+    });
   });
 
   /* 压印入场 */
@@ -103,6 +137,8 @@
       if (k >= 1) { el.textContent = txt; return; }
       var solved = Math.floor((1 - Math.pow(1 - k, 3)) * n), tick = Math.floor(t / 32), tail = '';
       for (var i = solved; i < Math.min(n, solved + 3); i++) {
+        // 中文不做乱码：遇到非拉丁字符就停，它等到被“解锁”时才原样出现
+        if (!/[ -~]/.test(txt[i])) break;
         tail += txt[i] === ' ' ? ' ' : GLYPHS[Math.floor(hash2(i + seed * 31, tick) * GLYPHS.length)];
       }
       var rest = txt.slice(solved + tail.length);
@@ -112,10 +148,10 @@
     requestAnimationFrame(frame);
   }
   if (motionOn) {
-    var decodeSel = '.t-cover, .rh .no, .rh .en, .plate-tag, .toc .no, .figcap b, .folio span, .t-cap';
+    var decodeSel = '.t-cover, .rh .no, .rh .ti, .rh .en, .plate-tag, .toc .no, .figcap b, .folio span, .t-cap';
     document.querySelectorAll(decodeSel).forEach(function (el) {
       var txt = el.textContent;
-      if (!txt.trim() || el.children.length || !/^[\x20-\x7e·×–]+$/.test(txt)) return;
+      if (!txt.trim() || el.children.length || !/[A-Za-z0-9]/.test(txt)) return;
       el.setAttribute('aria-label', txt);
       var host = el.closest('[data-rev]') || el;
       var delay = el.classList.contains('t-cover') ? 160 : 60;

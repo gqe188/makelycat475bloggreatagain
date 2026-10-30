@@ -494,6 +494,7 @@ a.plate-link:hover .plate{transform:translateY(-3px);box-shadow:0 14px 26px -14p
   transition-delay:calc(var(--i) * 45ms + var(--d,0ms));
 }
 .js-motion .chars.in .ch{opacity:1;transform:none;color:inherit}
+.js-motion .chars .ch.bar{background:var(--ink);color:transparent;transition-property:opacity,transform}
 
 /* 里程计：每一位从 0 滚到目标数字 */
 .odo,.odo-p{display:inline-block;height:1.2em;line-height:1.2em;vertical-align:bottom;overflow:hidden}
