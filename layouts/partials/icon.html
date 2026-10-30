@@ -1,0 +1,11 @@
+{{/* 导航线性图标：24 格，1.75 线宽，方头直角，不填色。传入名字。 */}}
+{{ $p := dict
+  "home" `<path d="M4 11 L12 4 L20 11 V20 H4 Z"/><path d="M10 20 V14 H14 V20"/>`
+  "archive" `<path d="M4 5 H20 V9 H4 Z"/><path d="M5 9 V19 H19 V9"/><path d="M9 13 H15"/>`
+  "plates" `<path d="M3 5 H21 V19 H3 Z"/><path d="M3 16 L9 10 L13 14 L16 11 L21 16"/><path d="M15 8 H17"/>`
+  "about" `<path d="M4 4 H20 V20 H4 Z"/><path d="M9 10 H9.01 M15 10 H15.01"/><path d="M8 15 H16"/>`
+  "theme" `<path d="M12 3 V21"/><path d="M12 3 A9 9 0 0 1 12 21 Z" fill="currentColor"/><path d="M12 3 A9 9 0 0 0 12 21"/>`
+  "rss" `<path d="M5 19 H5.01"/><path d="M5 12 A7 7 0 0 1 12 19"/><path d="M5 5 A14 14 0 0 1 19 19"/>`
+  "tri" `<path d="M5 6 H19 L12 18 Z" fill="currentColor" stroke="none"/><path d="M9 6 L12 11 L15 6" stroke="var(--ef-ink)" stroke-width="1.5"/>`
+}}
+<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true" focusable="false">{{ index $p . | safeHTML }}</svg>

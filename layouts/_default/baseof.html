@@ -19,14 +19,24 @@
   <div class="ef-tri ef-in-sweep" aria-hidden="true"><i></i><i></i><i></i></div>
 
   <div class="shell">
-    <nav class="ef-rail rail" aria-label="主导航">
-      <a class="brand" href="{{ site.Home.RelPermalink }}" aria-label="{{ site.Params.name }} 首页">{{ partial "catmark.html" "rail-mark" }}<span>{{ site.Params.h1 }}</span></a>
-      <a href="{{ site.Home.RelPermalink }}"{{ if .IsHome }} aria-current="page"{{ end }}><span class="ef-eyebrow">Home</span><span>首页</span></a>
-      {{ range site.Menus.main }}
-        {{ $cur := or (eq .URL $.RelPermalink) (and .Page (or ($.IsDescendant .Page) (eq $.FirstSection .Page))) }}
-        <a href="{{ .URL }}"{{ if $cur }} aria-current="page"{{ end }}><span class="ef-eyebrow">{{ .Params.en | default .Name }}</span><span>{{ .Name }}</span></a>
+    {{/* 窄图标栏：标记在顶，当前项整格墨块，底部工具与一块墨色“最新”入口 */}}
+    {{ $newest := index (where site.RegularPages "Section" "posts") 0 }}
+    <nav class="rail" aria-label="主导航">
+      <a class="brand" href="{{ site.Home.RelPermalink }}" aria-label="{{ site.Params.name }} 首页">{{ partial "catmark.html" "rail-mark" }}<span class="brand-name">{{ site.Params.h1 }}</span></a>
+      <div class="rail-nav">
+        <a href="{{ site.Home.RelPermalink }}"{{ if .IsHome }} aria-current="page"{{ end }}>{{ partial "icon.html" "home" }}<span>首页</span></a>
+        {{ range site.Menus.main }}
+          {{ $cur := or (eq .URL $.RelPermalink) (and .Page (or ($.IsDescendant .Page) (eq $.FirstSection .Page))) }}
+          <a href="{{ .URL }}"{{ if $cur }} aria-current="page"{{ end }}>{{ partial "icon.html" (lower (.Params.en | default "about")) }}<span>{{ .Name }}</span></a>
+        {{ end }}
+      </div>
+      <div class="rail-tools">
+        <button type="button" data-theme-toggle aria-label="切换深浅色">{{ partial "icon.html" "theme" }}</button>
+        <a href="{{ "index.xml" | relURL }}" aria-label="RSS 订阅">{{ partial "icon.html" "rss" }}</a>
+      </div>
+      {{ with $newest }}
+      <a class="rail-go" href="{{ .RelPermalink }}">{{ partial "icon.html" "tri" }}<span>最新</span><span class="ef-field">{{ partial "entry-no.html" . }}</span></a>
       {{ end }}
-      <button class="ef-btn small theme" type="button" data-theme-toggle aria-label="切换深浅色">深浅</button>
     </nav>
 
     <main id="main">

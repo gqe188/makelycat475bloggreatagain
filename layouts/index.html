@@ -8,70 +8,59 @@
 {{ $chars := 0 }}
 {{ range $posts }}{{ $chars = add $chars (.Content | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | countrunes) }}{{ end }}
 {{ $mark := site.Params.h1 }}
-{{ $solid := replaceRE `[0-9]+$` "" $mark }}
-{{ $hollow := strings.TrimPrefix $solid $mark }}
 
-{{/* ── 首屏：字段统计 / 字标（实心 + 空心） / 马克笔一句 / 按钮 / 右侧切角画框 ── */}}
+{{/* ── 首屏：整屏报头照片 / 左上信息签 / 左下标题框 / 右下深色面板组 ── */}}
 <section class="hero" data-hero>
-  <p class="meta ef-field">
-    {{ with $newest }}<time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006.01.02" }}</time>{{ end }}
-    <span><b data-fx-load>{{ len $posts }}</b> 篇</span>
-    <span><b data-fx-load>{{ len $imgs }}</b> 张照片</span>
-    <span><b data-fx-load>{{ lang.FormatNumber 0 $chars }}</b> 字</span>
-  </p>
-
-  <h1 class="ef-wordmark" aria-label="{{ $mark }}">
-    <span class="solid ef-in-drive" aria-hidden="true">{{ $solid }}</span>
-    {{ with $hollow }}<span class="hollow ef-in-drive" style="animation-delay: 140ms" aria-hidden="true">{{ . }}</span>{{ end }}
-  </h1>
-
-  <div class="copy">
-    <p class="claim"><span class="ef-marker ef-in-stroke">{{ site.Params.intro }}</span></p>
-    <p class="ef-actions">
-      {{ with $newest }}<a class="ef-btn go" href="{{ .RelPermalink }}">读最新一篇 <span class="sub">{{ partial "entry-no.html" . }}</span></a>{{ end }}
-      {{ with $archive }}<a class="ef-btn" href="{{ .RelPermalink }}">全部文章</a>{{ end }}
-      {{ with $gallery }}<a class="ef-btn" href="{{ .RelPermalink }}">相册</a>{{ end }}
-    </p>
-  </div>
-
   {{ with resources.Get "img/masthead.webp" }}
-  {{ $a := .Resize "900x webp q82" }}{{ $b := .Resize "1400x webp q84" }}
-  <figure class="ef-frame ef-in-power" style="--i: 2">
-    <div class="window">
-      <img src="{{ $a.RelPermalink }}" srcset="{{ $a.RelPermalink }} 900w, {{ $b.RelPermalink }} 1400w" sizes="(max-width: 899px) 100vw, 40vw" alt="报头照片" width="{{ $a.Width }}" height="{{ $a.Height }}" fetchpriority="high">
-    </div>
-    <figcaption class="ef-plate">{{ site.Params.name }}</figcaption>
+  {{ $a := .Resize "1400x webp q82" }}{{ $b := .Resize "2000x webp q82" }}
+  <figure class="art ef-in-power">
+    <img src="{{ $a.RelPermalink }}" srcset="{{ $a.RelPermalink }} 1400w, {{ $b.RelPermalink }} 2000w" sizes="100vw" alt="报头照片" width="{{ $a.Width }}" height="{{ $a.Height }}" fetchpriority="high">
   </figure>
+  <p class="info ef-in-come">
+    <span class="ef-eyebrow slash">Info / {{ $mark }}</span>
+    <span class="ef-field">报头 │ {{ .Width }} × {{ .Height }}</span>
+  </p>
   {{ end }}
 
-  {{/* 最近文章滚动条：至少 4 篇才有意义 */}}
-  {{ if ge (len $posts) 4 }}
-  <div class="ef-ticker" aria-label="最近的文章">
-    <div class="track">
-      {{ range $k := slice 0 1 }}
-      <ul{{ if eq $k 1 }} aria-hidden="true"{{ end }}>
-        {{ range first 8 $posts }}<li><a href="{{ .RelPermalink }}"{{ if eq $k 1 }} tabindex="-1"{{ end }}><b>{{ partial "entry-no.html" . }}</b>{{ .Title }}</a></li>{{ end }}
-      </ul>
-      {{ end }}
-    </div>
+  <div class="titlebox">
+    <h1 class="ef-in-drive">{{ $mark }}</h1>
+    <p class="sub ef-in-stroke">{{ site.Params.intro }}</p>
   </div>
-  {{ end }}
+
+  <div class="dock">
+    {{ with $newest }}
+    {{ $n := .Content | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | countrunes }}
+    <a class="dock-latest ef-in-power" style="--i: 1" href="{{ .RelPermalink }}" data-fx-host>
+      <span class="hd"><i></i>最新 <span class="ef-field" data-fx>{{ partial "entry-no.html" . }}</span></span>
+      <span class="t">{{ .Title }}</span>
+      <span class="ef-field">{{ .Date.Format "2006.01.02" }} │ {{ lang.FormatNumber 0 $n }} 字</span>
+    </a>
+    {{ end }}
+    <div class="dock-stats ef-in-power" style="--i: 2">
+      <span class="hd"><i></i>统计</span>
+      <dl>
+        <dt>文章</dt><dd data-fx-load>{{ len $posts }}</dd>
+        <dt>照片</dt><dd data-fx-load>{{ len $imgs }}</dd>
+        <dt>字数</dt><dd data-fx-load>{{ lang.FormatNumber 0 $chars }}</dd>
+      </dl>
+    </div>
+    <nav class="dock-go ef-in-power" style="--i: 3" aria-label="入口">
+      {{ with $archive }}<a href="{{ .RelPermalink }}">全部文章</a>{{ end }}
+      {{ with $gallery }}<a href="{{ .RelPermalink }}">相册</a>{{ end }}
+    </nav>
+  </div>
 </section>
 
-{{/* ── 最新一篇：空心大编号，指向时墨色灌满 ── */}}
-{{ with $newest }}
-{{ $no := partial "entry-no.html" . }}
-{{ $n := .Content | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | countrunes }}
-<section class="latest">
-  <a href="{{ .RelPermalink }}" data-fx-host>
-    <span class="ef-hollow-no" aria-hidden="true" data-fx>{{ strings.TrimPrefix "No." $no }}</span>
-    <span class="body">
-      <span class="ef-field"><span class="flag">最新</span> {{ .Date.Format "2006.01.02" }} │ {{ lang.FormatNumber 0 $n }} 字 │ 约 {{ .ReadingTime }} 分钟</span>
-      <span class="title">{{ .Title }}</span>
-      {{ with .Summary | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | htmlUnescape | strings.TrimSpace }}<span class="sum ef-read">{{ . | truncate 120 }}</span>{{ end }}
-      <span class="ef-btn go">阅读全文</span>
-    </span>
-  </a>
+{{/* ── 更新日历：每篇文章的日期 ── */}}
+{{ if $posts }}
+<section class="block">
+  <p class="ef-eyebrow slash">Updates</p>
+  <h2 class="ef-bar-title">更新日历</h2>
+  <div class="calendar">
+    {{ range $i, $p := first 12 $posts.ByDate }}
+    <a class="ef-in-come" style="--i: {{ $i }}" href="{{ $p.RelPermalink }}"><span class="ef-tag">{{ $p.Date.Format "01.02" }}</span><span class="ef-field">{{ partial "entry-no.html" $p }} │ {{ $p.Title }}</span></a>
+    {{ end }}
+  </div>
 </section>
 {{ end }}
 
@@ -107,15 +96,21 @@
 </section>
 {{ end }}{{ end }}
 
-{{/* 启动页：首页、每个会话一次；进度来自真实加载，默认 hidden，由脚本决定是否启用 */}}
+{{/* 启动页：首页、每个会话一次。深色底、左缘黄色长条按真实加载进度往下走，
+   读数跟着条的末端；右侧竖排字标、黄色三角、一条通到右缘的细线和一句英文；满了以后黄色闪屏切入页面。 */}}
 <div class="boot" hidden aria-hidden="true">
-  <button class="ef-btn small skip-boot" type="button">跳过</button>
-  <div class="mark">
+  <i class="boot-bar"></i>
+  <div class="boot-read"><i></i><b class="pct">0<small>%</small></b><span class="state">Loading / 加载中</span></div>
+  <div class="boot-lock">
     {{ partial "catmark.html" "boot-mark" }}
-    <p class="ef-wordmark"><span class="solid">{{ $mark }}</span></p>
+    <p class="mk"><small>{{ site.Params.name }}</small><b>{{ replaceRE `[0-9]+$` "" $mark }}</b><b class="num">{{ strings.TrimPrefix (replaceRE `[0-9]+$` "" $mark) $mark }}</b></p>
   </div>
-  <div class="ef-progress" style="--p: 0">
-    <span class="ef-eyebrow">Loading / 加载中</span><span class="ef-field readout">000%</span><i></i>
+  <div class="boot-tag">
+    {{ partial "icon.html" "tri" }}
+    <span class="ef-field">{{ printf "%02d" (len $posts) }} 篇 │ {{ printf "%02d" (len $imgs) }} 张</span>
   </div>
+  <p class="boot-line">{{ upper site.Params.intro }}</p>
+  <button class="ef-btn small skip-boot" type="button">跳过</button>
+  <i class="boot-flash"></i>
 </div>
 {{ end }}

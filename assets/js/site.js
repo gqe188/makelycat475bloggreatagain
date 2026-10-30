@@ -188,8 +188,11 @@
     try { sessionStorage.setItem('ef-boot', '1'); } catch (e) {}
     document.body.appendChild(boot);
     boot.hidden = false;
-    var bar = boot.querySelector('.ef-progress');
-    var readout = boot.querySelector('.readout');
+    var readout = boot.querySelector('.pct');
+    var setP = function (v) {
+      boot.style.setProperty('--p', v.toFixed(4));
+      readout.innerHTML = Math.round(v * 100) + '<small>%</small>';
+    };
     var tasks = [];
     if (document.fonts && document.fonts.ready) tasks.push(document.fonts.ready);
     // 只等首屏真正要加载的图（懒加载的图在启动页盖着时不会开始加载）
@@ -199,12 +202,11 @@
     });
     var total = Math.max(1, tasks.length), done = 0, shown = 0, t0 = performance.now(), ended = false;
     tasks.forEach(function (p) { p.then(function () { done++; }); });
-    // 进度连续推进（每帧追向真实进度），至少显示 0.8 秒，避免一闪而过
+    // 进度连续推进（每帧追向真实进度），至少走 1.2 秒，让左缘长条看得清
     var tick = setInterval(function () {
-      var target = Math.min(done / total, (performance.now() - t0) / 800);
-      if (shown < target) shown = Math.min(target, shown + 0.03);
-      bar.style.setProperty('--p', shown.toFixed(4));
-      readout.textContent = ('00' + Math.round(shown * 100)).slice(-3) + '%';
+      var target = Math.min(done / total, (performance.now() - t0) / 1200);
+      if (shown < target) shown = Math.min(target, shown + 0.02);
+      setP(shown);
       if (shown >= 1) finish();
     }, 16);
     // 最多等 4 秒：网络慢时不让人干等
@@ -213,14 +215,17 @@
       if (ended) return;
       ended = true;
       clearInterval(tick); clearTimeout(cap);
-      bar.style.setProperty('--p', '1');
-      readout.textContent = '100%';
+      setP(1);
+      // 黄色从左擦满整屏 → 撤掉深色底 → 黄色向右擦走，页面入场同时开始
       setTimeout(function () {
-        boot.classList.add('out');
-        root.classList.remove('booting');
-        start();
-        setTimeout(function () { boot.remove(); }, 380);
-      }, 160);
+        boot.classList.add('flash');
+        setTimeout(function () {
+          boot.classList.add('clear');
+          root.classList.remove('booting');
+          start();
+          setTimeout(function () { boot.remove(); }, 420);
+        }, 300);
+      }, 180);
     };
     boot.querySelector('.skip-boot').addEventListener('click', function () { done = total; shown = 1; finish(); });
   } else {
