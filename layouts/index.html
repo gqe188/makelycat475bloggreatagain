@@ -31,7 +31,7 @@
       {{ with $newest }}
       <a class="sticker" href="{{ .RelPermalink }}"><b>最新 · {{ partial "entry-no.html" . }}</b><span>{{ .Title }}</span><span class="mono">{{ .Date.Format "2006.01.02" }}</span></a>
       {{ end }}
-      <a class="plate-link" href="{{ "/gallery/" | relURL }}" aria-label="报头照片，前往相册">
+      <a class="plate-link" href="{{ with $gallery }}{{ .RelPermalink }}{{ end }}" aria-label="报头照片，前往相册">
         <div class="plate" style="aspect-ratio:{{ .Width }}/{{ .Height }}">
           <span class="plate-tag">PL.00</span>
           {{/* 先网点制版，再由清晰原片自上而下曝光覆盖，终态是原片 */}}
@@ -56,7 +56,7 @@
       <p class="index-count" data-rev aria-hidden="true"><span class="t-outline">01</span><span class="t-cap">索引 · Index</span></p>
       <div class="sec-head">
         <h2 class="t-h2">文章</h2>
-        <a href="{{ "/posts/" | relURL }}">全部归档 →</a>
+        <a href="{{ with site.GetPage "/posts" }}{{ .RelPermalink }}{{ end }}">全部归档 →</a>
       </div>
       <ol class="toc">
         {{ range $i, $p := first 6 $posts }}

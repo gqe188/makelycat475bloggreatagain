@@ -4,8 +4,8 @@
    纸是基底，墨是内容，橙只做标注（≤3%）；屏幕只追加“时间”与“光”。
    ══════════════════════════════════════════════════════════════════ */
 
-@font-face{font-family:"JetBrains Mono";font-weight:400;font-display:swap;src:url("/fonts/jetbrains-mono-400.woff2") format("woff2")}
-@font-face{font-family:"JetBrains Mono";font-weight:600 700;font-display:swap;src:url("/fonts/jetbrains-mono-600.woff2") format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-weight:400;font-display:swap;src:url("../fonts/jetbrains-mono-400.woff2") format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-weight:600 700;font-display:swap;src:url("../fonts/jetbrains-mono-600.woff2") format("woff2")}
 
 :root{
   --paper:#e4e0d5;         /* 页面外的桌面 */

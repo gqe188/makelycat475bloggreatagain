@@ -23,13 +23,13 @@
   <header class="mh">
     <div class="mh-in">
       {{/* 字标：猫猫头标记 + 三行字（大字名 / 通栏小字 / 细 + 粗） */}}
-      <a class="logo" href="{{ "/" | relURL }}" aria-label="{{ site.Params.name }} 首页">
+      <a class="logo" href="{{ site.Home.RelPermalink }}" aria-label="{{ site.Params.name }} 首页">
         {{ partial "catmark.html" "logo-mark" }}
         <span class="lock"><b>{{ site.Params.h1 }}</b><small>Personal Records</small><span>Archive <b>Blog</b></span></span>
       </a>
       <nav class="mh-nav" aria-label="主导航">
         {{ range $i, $m := site.Menus.main }}
-          {{ $u := $m.URL | relURL }}
+          {{ $u := $m.URL }}
           {{ $cur := or (eq $u $.RelPermalink) (and $m.Page (or ($.IsDescendant $m.Page) (eq $.FirstSection $m.Page))) }}
           <a href="{{ $u }}"{{ if $cur }} aria-current="page"{{ end }}><span class="en">{{ $m.Params.en | default $m.Name }}</span><span class="zh">{{ $m.Name }}</span></a>
         {{ end }}
