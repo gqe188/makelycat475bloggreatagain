@@ -23,11 +23,10 @@
 
   <header class="mh">
     <div class="mh-in">
-      {{/* 三行字标：大字名 / 通栏小字 / 细 + 粗 的类别行 */}}
+      {{/* 字标：猫猫头标记 + 三行字（大字名 / 通栏小字 / 细 + 粗） */}}
       <a class="logo" href="{{ "/" | relURL }}" aria-label="{{ site.Params.name }} 首页">
-        <b>{{ site.Params.h1 }}</b>
-        <small>Personal Records</small>
-        <span>Archive <b>Blog</b></span>
+        {{ partial "catmark.html" "logo-mark" }}
+        <span class="lock"><b>{{ site.Params.h1 }}</b><small>Personal Records</small><span>Archive <b>Blog</b></span></span>
       </a>
       <nav class="mh-nav" aria-label="主导航">
         {{ range $i, $m := site.Menus.main }}

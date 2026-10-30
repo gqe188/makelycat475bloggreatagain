@@ -39,6 +39,7 @@
   })();
 </script>
 {{ with resources.Get "favicon.svg" | fingerprint }}<link rel="icon" href="{{ .RelPermalink }}" type="image/svg+xml">{{ end }}
+<link rel="apple-touch-icon" href="{{ "apple-touch-icon.png" | relURL }}">
 {{ with site.Home.OutputFormats.Get "rss" }}
 <link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}" title="{{ site.Title }}">
 {{ end }}

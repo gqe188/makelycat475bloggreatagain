@@ -97,15 +97,19 @@ a{color:inherit}
   width:var(--page-w);max-width:calc(100% - 32px);margin:0 auto;
   display:flex;align-items:center;gap:16px;min-height:56px;
 }
-/* 三行字标：大字名 / 通栏小字 / 细 + 粗 */
+/* 字标：猫猫头标记 + 三行字（大字名 / 通栏小字 / 细 + 粗） */
 .logo{
-  display:inline-grid;align-content:center;min-height:44px;padding:6px 0;
+  display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:6px 0;
   text-decoration:none;white-space:nowrap;text-transform:uppercase;font-family:var(--f-disp);
 }
-.logo > b{font-weight:700;font-size:17px;line-height:1;letter-spacing:.02em}
-.logo small{font-weight:500;font-size:6.6px;line-height:1.5;letter-spacing:.17em;margin-top:2px}
-.logo > span{font-weight:300;font-size:12px;line-height:1;letter-spacing:.04em}
-.logo > span b{font-weight:700}
+.logo-mark{width:34px;height:34px;flex:none;transition:transform .4s cubic-bezier(.22,.58,.12,.98)}
+.logo:hover .logo-mark{transform:rotate(-6deg)}
+.lock{display:grid}
+.lock > b{font-weight:700;font-size:17px;line-height:1;letter-spacing:.02em}
+.lock small{font-weight:500;font-size:6.6px;line-height:1.5;letter-spacing:.17em;margin-top:2px}
+.lock > span{font-weight:300;font-size:12px;line-height:1;letter-spacing:.04em}
+.lock > span b{font-weight:700}
+.catmark{display:block;overflow:visible}
 
 /* 双语导航：英文大写在上，中文小字贴在下；当前项一条 2px 下划线，长度等于英文词宽 */
 .mh-nav{display:flex;margin-left:auto}
@@ -462,7 +466,9 @@ a.plate-link:hover .plate{transform:translateY(-3px);box-shadow:0 14px 26px -14p
   .mh-in{gap:4px}
   .mh-nav a{padding:0 6px}
   .mh-nav .en{font-size:10px;letter-spacing:1px}
-  .logo small{display:none}
+  .lock small{display:none}
+  .logo-mark{width:28px;height:28px}
+  .logo{gap:7px}
   .toc a{grid-template-columns:48px 1fr}
   .toc .dt,.toc .len{grid-column:2}
   .toc .sum{grid-column:2}
@@ -627,24 +633,15 @@ a.plate-link:hover .plate{transform:translateY(-3px);box-shadow:0 14px 26px -14p
   float:left;font:700 46px/.88 var(--f-disp);color:var(--ink);margin:6px 10px 0 0;
 }
 
-/* 封底黑版（深色站点下反成纸面，保持“整版反色”的节奏） */
-.spread.poster{
-  background:var(--ink);color:var(--sheet);border-color:var(--ink);
-  --hair:color-mix(in srgb,var(--sheet) 22%,transparent);
-}
-.spread.poster::after{opacity:.12;mix-blend-mode:screen}
-.poster .rh .ti{color:var(--sheet)}
-.poster .rh .en,.poster .folio,.poster .colo dt{color:color-mix(in srgb,var(--sheet) 55%,transparent)}
-:root[data-theme="dark"] .poster .rh .no{color:var(--sheet)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .poster .rh .no{color:var(--sheet)}}
-.poster .cropmarks span::before,.poster .cropmarks span::after{background:var(--sheet)}
-.poster-year{-webkit-text-stroke-color:var(--sheet);margin:8px 0 56px}
-.js-motion .poster .rh::after{background:var(--hair)}
-.colo{border-top:1px solid var(--hair);padding-top:16px}
-.colo dt{font:600 8.5px/1.6 var(--f-mono);letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px}
-.colo dd{font:400 12px/1.9 var(--f-sans);letter-spacing:.02em;color:color-mix(in srgb,var(--sheet) 86%,transparent)}
-.colo dd.mono{font-family:var(--f-mono);font-size:11px}
-.colo-note{margin-top:40px;max-width:44em;font:400 10px/1.9 var(--f-mono);letter-spacing:.04em;color:color-mix(in srgb,var(--sheet) 55%,transparent)}
+/* 开场：欢迎页的猫猫头按笔顺画出，＋ − 随后浮现，鼻子最后压印 */
+.boot-mark{width:56px;height:56px;margin-top:8px;color:var(--ink)}
+.boot-mark .cm-head{stroke-dasharray:0 100;transition:stroke-dasharray .9s var(--out) .45s}
+.boot-mark .cm-plus,.boot-mark .cm-minus{opacity:0;transform:translateY(3px);transition:opacity .4s ease,transform .5s var(--out)}
+.boot-mark .cm-plus{transition-delay:1.05s}.boot-mark .cm-minus{transition-delay:1.15s}
+.boot-mark .cm-nose{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(2.4);transition:opacity .2s 1.3s,transform .45s var(--expo) 1.3s}
+.boot.s-welcome .boot-mark .cm-head{stroke-dasharray:100 0}
+.boot.s-welcome .boot-mark .cm-plus,.boot.s-welcome .boot-mark .cm-minus{opacity:1;transform:none}
+.boot.s-welcome .boot-mark .cm-nose{opacity:1;transform:none}
 
 /* 灯箱编号快切：先闪成黑条，再恢复 */
 .lb-no{padding:2px 4px}

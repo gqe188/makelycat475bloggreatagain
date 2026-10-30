@@ -42,7 +42,7 @@
     </figure>
     {{ end }}
   </div>
-  <div class="folio"><span>{{ site.Params.h1 }} / Cover</span><span>P.01 / 03</span></div>
+  <div class="folio"><span>{{ site.Params.h1 }} / Cover</span><span>P.01 / 02</span></div>
 </section>
 
 {{/* ── P.02 索引：文章目录 7 栏 + 相册小样 5 栏 ── */}}
@@ -90,22 +90,7 @@
     </aside>
     {{ end }}
   </div>
-  <div class="folio"><span>{{ site.Params.h1 }} / Index</span><span>P.02 / 03</span></div>
-</section>
-
-{{/* ── P.03 封底：版权页（黑版） ── */}}
-<section class="spread poster" aria-labelledby="colophon-title">
-  {{ partial "cropmarks.html" }}
-  <header class="rh" data-rev><span class="no">03</span><span class="ti" id="colophon-title">版权 · Colophon</span><span class="en">{{ site.BaseURL }}</span></header>
-  <p class="t-outline poster-year" data-rev aria-hidden="true">{{ now.Year }}</p>
-  <div class="colo g">
-    <dl class="c1-3" data-rev style="--d:0ms"><dt>出版 Publish</dt><dd>{{ site.Title }}</dd><dd>作者 {{ site.Params.author }}</dd><dd class="mono">{{ site.BaseURL | strings.TrimPrefix "https://" | strings.TrimSuffix "/" }}</dd></dl>
-    <dl class="c4-6" data-rev style="--d:70ms"><dt>构建 Build</dt><dd>Hugo {{ hugo.Version }}</dd><dd class="mono">{{ now.Format "2006.01.02" }}</dd><dd>Cloudflare Pages</dd></dl>
-    <dl class="c7-9" data-rev style="--d:140ms"><dt>字体 Type</dt><dd>JetBrains Mono（自托管，OFL）</dd><dd>中文 / 展示字：系统字体</dd></dl>
-    <dl class="c10-12" data-rev style="--d:210ms"><dt>图像 Images</dt><dd>照片均为作者自摄</dd><dd>导入时剥除 EXIF，长边 2000</dd></dl>
-  </div>
-  <p class="colo-note" data-rev>模板与样式由 AI 生成，文章与照片为作者本人所作。版式借鉴《明日方舟》莱茵生命的同人设计研究，与鹰角网络无关联，不含任何官方图片、Logo 或字体。</p>
-  <div class="folio"><span>{{ site.Params.h1 }} / Colophon</span><span>P.03 / 03</span></div>
+  <div class="folio"><span>{{ site.Params.h1 }} / Index</span><span>P.02 / 02</span></div>
 </section>
 
 {{/* 开场装载序列：每个会话只在首页播一次；默认 hidden，由脚本决定是否启用 */}}
@@ -117,7 +102,7 @@
     <g class="orbit"><circle class="dot" cx="120" cy="47" r="3"/><circle class="dot" cx="120" cy="193" r="3"/></g>
   </svg>
   <p class="boot-msg"></p>
-  <p class="boot-welcome"><span>Welcome to</span><b>{{ site.Params.h1 }}</b></p>
+  <div class="boot-welcome"><span>Welcome to</span><b>{{ site.Params.h1 }}</b>{{ partial "catmark.html" "boot-mark" }}</div>
   <div class="boot-foot"><span>Powered by <b>Hugo</b> <i></i></span></div>
   <button class="boot-skip" type="button">Skip ›</button>
 </div>

@@ -341,7 +341,7 @@
     at(1150, function () { say('› ' + boot.dataset.entries + ' entries / ' + boot.dataset.plates + ' plates'); });
     at(1800, function () { say('› Access authorized'); });
     at(2300, function () { boot.classList.add('s-welcome'); });
-    at(3400, finish);
+    at(4100, finish);
     boot.addEventListener('click', finish);
     document.addEventListener('keydown', finish);
   } else {
