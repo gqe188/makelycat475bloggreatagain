@@ -1,4 +1,4 @@
-/* lycat475 · 档案册交互：主题切换 / 压印入场 / 网点制版 / 灯箱 */
+/* lycat475 · 档案册交互：主题切换 / 压印入场 / 网点制版 / 双螺旋 / 灯箱 / 开场 */
 (function () {
   'use strict';
 
@@ -243,7 +243,14 @@
     };
     img.decoding = 'async';
     // 图片就绪且进入视口后才制版（开场序列期间等待）
-    whenSeen(cv, function () { p.seen = true; if (p.ready) drawHalftone(p, motionOn); });
+    // 图片就绪且进入视口后才制版（开场序列期间等待）
+    whenSeen(cv, function () {
+      p.seen = true;
+      if (p.ready) drawHalftone(p, motionOn);
+      // 网点显影 780ms 后，清晰原片接着曝光
+      var plate = cv.parentNode;
+      setTimeout(function () { plate.classList.add('exposed'); }, motionOn ? 1300 : 0);
+    });
     img.onload = function () {
       p.ready = true;
       if (p.seen) drawHalftone(p, motionOn);
@@ -253,9 +260,77 @@
     plates.push(p);
   });
 
+  /* ---------- 双螺旋背景：滚动时拧转（相位随滚动），并以 0.25 倍速上移 ---------- */
+  var hx = document.querySelector('canvas.helix');
+  var hctx = hx && hx.getContext ? hx.getContext('2d') : null;
+  var hq = false;
+  function drawHelix() {
+    hq = false;
+    if (!hctx || getComputedStyle(hx).display === 'none') return;
+    var w = window.innerWidth, h = window.innerHeight;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (hx.width !== Math.round(w * dpr) || hx.height !== Math.round(h * dpr)) {
+      hx.width = Math.round(w * dpr); hx.height = Math.round(h * dpr);
+    }
+    hctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    hctx.clearRect(0, 0, w, h);
+    hctx.strokeStyle = cssVar('--ink');
+    var sy = reduce ? 0 : (window.pageYOffset || 0);
+    // 拧转放慢：滚一屏（约 900px）转大约 130°；上移 0.2 倍速
+    var twist = sy * 0.0025, drift = sy * 0.2;
+    // 螺旋居中放在版心外的页边里，振幅随页边宽度收放
+    var mar = (w - Math.min(1180, w - 32)) / 2;
+    var k = Math.PI * 2 / 560, A = Math.max(12, Math.min(36, mar / 2 - 12)), step = 3, rung = 18;
+    var ink = cssVar('--ink');
+    [[mar / 2, 0], [w - mar / 2, Math.PI]].forEach(function (side) {
+      var cx = side[0], off = side[1];
+      function phase(y) { return (y + drift) * k + twist + off; }
+      // 一股链在 y 处的横坐标与深度（cos 为正 = 朝向读者）
+      function strand(sgn, y) { var t = phase(y); return { x: cx + sgn * A * Math.sin(t), z: sgn * Math.cos(t) }; }
+      function strands(front) {
+        [1, -1].forEach(function (sgn) {
+          for (var y = -step; y < h + step; y += step) {
+            var p0 = strand(sgn, y), p1 = strand(sgn, y + step);
+            if ((p0.z >= 0) !== front) continue;
+            var d = (p0.z + 1) / 2;
+            hctx.globalAlpha = front ? 0.12 + 0.1 * d : 0.04 + 0.05 * d;
+            hctx.lineWidth = front ? 1.8 + 0.8 * d : 1 + 0.4 * d;
+            hctx.beginPath(); hctx.moveTo(p0.x, y); hctx.lineTo(p1.x, y + step); hctx.stroke();
+          }
+        });
+      }
+      hctx.strokeStyle = ink; hctx.fillStyle = ink; hctx.lineCap = 'round';
+      strands(false);
+      // 碱基对：每一档分成两半，各自跟随所连那股链的深度，中间留 3px 缝；两端各一个核苷酸点
+      var first = -((drift % rung) + rung) % rung;
+      for (var ry = first; ry < h + rung; ry += rung) {
+        var a1 = strand(1, ry), a2 = strand(-1, ry);
+        if (Math.abs(a1.x - a2.x) < 6) continue;
+        var mid = (a1.x + a2.x) / 2, dir = a1.x < mid ? 1 : -1;
+        [[a1, 1], [a2, -1]].forEach(function (end) {
+          var pt = end[0], d = (pt.z + 1) / 2, toward = pt.x < mid ? 1 : -1;
+          hctx.globalAlpha = 0.035 + 0.08 * d;
+          hctx.lineWidth = 1.4;
+          hctx.beginPath(); hctx.moveTo(pt.x, ry); hctx.lineTo(mid - toward * 1.5, ry); hctx.stroke();
+          hctx.globalAlpha = 0.05 + 0.14 * d;
+          hctx.beginPath(); hctx.arc(pt.x, ry, 1.2 + 1.2 * d, 0, 6.2832); hctx.fill();
+        });
+      }
+      strands(true);
+    });
+    hctx.globalAlpha = 1;
+  }
+  function queueHelix() { if (!hq) { hq = true; requestAnimationFrame(drawHelix); } }
+  if (hctx) {
+    drawHelix();
+    if (!reduce) window.addEventListener('scroll', queueHelix, { passive: true });
+    new MutationObserver(queueHelix).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+    if (darkMq && darkMq.addEventListener) darkMq.addEventListener('change', queueHelix);
+  }
+
   var rt;
   window.addEventListener('resize', function () {
-    clearTimeout(rt); rt = setTimeout(redrawPlates, 160);
+    clearTimeout(rt); rt = setTimeout(function () { redrawPlates(); drawHelix(); }, 160);
   });
 
   /* ---------- 灯箱 ---------- */
@@ -310,6 +385,24 @@
       if (opener) opener.focus();
     });
   }
+
+  /* ---------- 网格叠加：按 G 显示 12 栏与 8px 基线，用来自查版式 ---------- */
+  var grid = null;
+  document.addEventListener('keydown', function (e) {
+    if ((e.key !== 'g' && e.key !== 'G') || e.ctrlKey || e.metaKey || e.altKey) return;
+    var t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    if (document.querySelector('dialog[open], .boot:not([hidden])')) return;
+    if (!grid) {
+      grid = document.createElement('div');
+      grid.className = 'grid-overlay';
+      grid.setAttribute('aria-hidden', 'true');
+      grid.innerHTML = '<div class="cols">' + new Array(13).join('<i></i>') + '</div><div class="base"></div><span class="tag">GRID 12 / 8PX · G</span>';
+      grid.hidden = true;
+      document.body.appendChild(grid);
+    }
+    grid.hidden = !grid.hidden;
+  });
 
   /* ---------- 开场装载序列：首页、每个会话一次；点击或按键跳过 ---------- */
   var boot = document.querySelector('.boot');

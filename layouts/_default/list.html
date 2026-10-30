@@ -5,10 +5,11 @@
   <header class="rh" data-rev><span class="no">01</span><span class="ti">归档 · Archive</span><span class="en">{{ len .Pages }} entries</span></header>
   <div class="g">
     <div class="c1-3">
-      <p class="index-count" data-rev aria-hidden="true"><span class="t-outline">{{ printf "%02d" (len .Pages) }}</span><span class="t-cap">Entries / 篇</span></p>
+      <p class="index-count" data-rev aria-hidden="true"><span class="t-outline">01</span><span class="t-cap">归档 · Archive</span></p>
       <h1 class="t-h1 page-title" id="page-title" data-rev>{{ .Title }}</h1>
       {{ with .Content }}<div class="t-body" data-rev>{{ . }}</div>{{ end }}
       <p class="sidenote" style="margin-top:40px" data-rev><b>注 01</b>按年份倒序排列；右侧为发表日期。</p>
+      {{ with index .Pages.ByLastmod.Reverse 0 }}<p class="archive-stamp" data-rev><span class="stamp">Rev. {{ .Lastmod.Format "2006.01.02" }}</span></p>{{ end }}
     </div>
     <div class="c4-12">
       {{ range $paginator.Pages.GroupByDate "2006" }}
@@ -21,7 +22,7 @@
                 <span class="no">{{ partial "entry-no.html" $p }}</span>
                 <span class="ti">{{ $p.Title }}</span>
                 <time class="dt" datetime="{{ $p.Date.Format "2006-01-02" }}">{{ $p.Date.Format "01.02" }}</time>
-                {{ with $p.Summary | plainify | htmlUnescape | strings.TrimSpace }}<span class="sum">{{ . | truncate 90 }}</span>{{ end }}
+                {{ with $p.Summary | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | htmlUnescape | strings.TrimSpace }}<span class="sum">{{ . | truncate 90 }}</span>{{ end }}
               </a>
             </li>
           {{ end }}

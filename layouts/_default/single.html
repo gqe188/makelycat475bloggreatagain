@@ -1,6 +1,7 @@
 {{ define "main" }}
 {{ $isPost := eq .Section "posts" }}
-{{ $chars := .Content | plainify | countrunes }}
+{{/* 字数不计图注与清单标签 */}}
+{{ $chars := .Content | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | countrunes }}
 {{ $no := cond $isPost (partial "entry-no.html" .) "" }}
 <article class="spread" aria-labelledby="page-title">
   {{ partial "cropmarks.html" }}
@@ -37,7 +38,6 @@
       {{ if $isPost }}
       <div class="sign" data-rev>
         <span class="stamp">{{ site.Params.signNote }}</span>
-        <span class="reg" aria-hidden="true"><i></i><b></b></span>
       </div>
       {{ end }}
     </div>

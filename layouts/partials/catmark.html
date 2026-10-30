@@ -1,10 +1,10 @@
-{{/* 猫猫头标记：线稿头型 + 「＋ −」双眼（呼应莱茵 ∞ 标里的正负号）+ 一点运行态色的鼻子。
-   颜色跟随 currentColor 与 --accent，深浅色模式自动切换。传入 class 名。 */}}
+{{/* 猫猫头标记：-_- 冷脸 + 两道腮红。
+   线稿跟随 currentColor，腮红跟随 --accent（浅色橙 / 深色青）。传入 class 名。 */}}
 <svg class="catmark {{ . }}" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
   <g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="miter" stroke-linecap="square">
-    <path class="cm-head" pathLength="100" d="M8 8 L24 20 H40 L56 8 V36 C56 48 45 56 32 56 C19 56 8 48 8 36 Z"/>
-    <path class="cm-plus" d="M17 35h10M22 30v10"/>
-    <path class="cm-minus" d="M37 35h10"/>
+    <path class="cm-head" pathLength="100" d="M7 9 L22 20.5 H42 L57 9 V35 C57 49.5 46 57.5 32 57.5 C18 57.5 7 49.5 7 35 Z"/>
+    <path class="cm-eyes" d="M15 37h11M38 37h11"/>
+    <path class="cm-mouth" d="M28 46h8"/>
   </g>
-  <rect class="cm-nose" x="29.5" y="42" width="5" height="4" fill="var(--accent)"/>
+  <path class="cm-blush" d="M12 43l3-2M15 44l3-2M46 43l3-2M49 44l3-2" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="square"/>
 </svg>

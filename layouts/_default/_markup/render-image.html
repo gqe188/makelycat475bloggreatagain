@@ -1,0 +1,19 @@
+{{/* 正文图片：独立成段时排成图版，带 FIG. 编号与图注（图注取 alt / title，作者原文） */}}
+{{ $src := .Destination }}
+{{ $w := 0 }}{{ $h := 0 }}
+{{ with .Page.Resources.Get .Destination }}
+  {{ if in (slice "image/jpeg" "image/png" "image/webp") .MediaType.Type }}
+    {{ $r := .Resize "1200x webp q82" }}
+    {{ $src = $r.RelPermalink }}{{ $w = $r.Width }}{{ $h = $r.Height }}
+  {{ else }}
+    {{ $src = .RelPermalink }}
+  {{ end }}
+{{ end }}
+{{ if .IsBlock }}
+<figure class="fig">
+  <img src="{{ $src }}" alt="{{ .PlainText }}"{{ with $w }} width="{{ . }}" height="{{ $h }}"{{ end }} loading="lazy" decoding="async">
+  <figcaption class="figcap"><b>FIG.{{ printf "%02d" (add .Ordinal 1) }}</b>{{ with or .PlainText .Title }}<span>{{ . }}</span>{{ end }}</figcaption>
+</figure>
+{{ else }}
+<img src="{{ $src }}" alt="{{ .PlainText }}"{{ with .Title }} title="{{ . }}"{{ end }} loading="lazy" decoding="async">
+{{- end -}}

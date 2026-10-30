@@ -34,11 +34,13 @@
       <a class="plate-link" href="{{ "/gallery/" | relURL }}" aria-label="报头照片，前往相册">
         <div class="plate" style="aspect-ratio:{{ .Width }}/{{ .Height }}">
           <span class="plate-tag">PL.00</span>
+          {{/* 先网点制版，再由清晰原片自上而下曝光覆盖，终态是原片 */}}
           <canvas class="ht" data-src="{{ $src.RelPermalink }}" aria-hidden="true"></canvas>
-          <noscript><img src="{{ $src.RelPermalink }}" alt="" width="{{ $src.Width }}" height="{{ $src.Height }}"></noscript>
+          {{ $sharp := .Resize "1400x webp q86" }}
+          <img class="plate-photo" src="{{ $src.RelPermalink }}" srcset="{{ $src.RelPermalink }} 1000w, {{ $sharp.RelPermalink }} 1400w" sizes="(max-width: 900px) calc(100vw - 72px), 360px" alt="报头照片" width="{{ $src.Width }}" height="{{ $src.Height }}" decoding="async">
         </div>
       </a>
-      <figcaption class="figcap"><b>PL.00</b><span>报头 · 45° 单色网点<br>Masthead, halftone</span></figcaption>
+      <figcaption class="figcap"><b>PL.00</b><span>报头 · 网点制版后显影<br>Masthead, halftone → photo</span></figcaption>
     </figure>
     {{ end }}
   </div>
@@ -51,7 +53,7 @@
   <header class="rh" data-rev><span class="no">01</span><span class="ti" id="index-title">索引 · Index</span><span class="en">{{ len $posts }} entries / {{ len $imgs }} plates</span></header>
   <div class="g">
     <div class="c1-7">
-      <p class="index-count" data-rev aria-hidden="true"><span class="t-outline">{{ printf "%02d" (len $posts) }}</span><span class="t-cap">Entries / 篇</span></p>
+      <p class="index-count" data-rev aria-hidden="true"><span class="t-outline">01</span><span class="t-cap">索引 · Index</span></p>
       <div class="sec-head">
         <h2 class="t-h2">文章</h2>
         <a href="{{ "/posts/" | relURL }}">全部归档 →</a>
@@ -63,7 +65,7 @@
               <span class="no">{{ partial "entry-no.html" $p }}</span>
               <span class="ti">{{ $p.Title }}</span>
               <time class="dt" datetime="{{ $p.Date.Format "2006-01-02" }}">{{ $p.Date.Format "2006.01.02" }}</time>
-              {{ with $p.Summary | plainify | htmlUnescape | strings.TrimSpace }}<span class="sum">{{ . | truncate 90 }}</span>{{ end }}
+              {{ with $p.Summary | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | htmlUnescape | strings.TrimSpace }}<span class="sum">{{ . | truncate 90 }}</span>{{ end }}
             </a>
           </li>
         {{ else }}

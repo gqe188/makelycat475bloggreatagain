@@ -30,6 +30,10 @@ disableKinds = ['taxonomy', 'term']
 [markup.goldmark.renderer]
   unsafe = false
 
+[markup.goldmark.parser]
+  # 独立成段的图片不再包进 <p>，由 render-image 输出带编号的 <figure>
+  wrapStandAloneImageWithinParagraph = false
+
 [markup.highlight]
   # 颜色由 assets/css/main.css 的 .chroma 规则决定
   noClasses = false

@@ -5,9 +5,9 @@
   <header class="rh" data-rev><span class="no">02</span><span class="ti">图版集 · Plates</span><span class="en">{{ len $imgs }} plates</span></header>
   <div class="g">
     <div class="c1-3 gallery-head">
-      <p class="index-count" data-rev aria-hidden="true"><span class="t-outline">{{ printf "%02d" (len $imgs) }}</span><span class="t-cap">Plates / 张</span></p>
+      <p class="index-count" data-rev aria-hidden="true"><span class="t-outline">02</span><span class="t-cap">图版集 · Plates</span></p>
       <h1 class="t-h1 page-title" id="page-title" data-rev>{{ .Title }}</h1>
-      <p class="t-cap" data-rev>PL.01–{{ printf "%02d" (len $imgs) }}</p>
+      <p class="t-cap" data-rev>共 {{ len $imgs }} 张 · {{ len $imgs }} plates</p>
       {{ with .Content }}<div class="t-body" data-rev>{{ . }}</div>{{ end }}
       {{ if $imgs }}
       <p class="sidenote" data-rev><b>注 01</b>点开图版看大图；← → 翻页，Esc 关闭。</p>

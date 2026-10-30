@@ -18,8 +18,7 @@
 {{ else }}
 <body>
   <a class="skip" href="#main">跳到正文</a>
-  <div class="binding" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-  <div class="helix" aria-hidden="true"></div>
+  <canvas class="helix" aria-hidden="true"></canvas>
 
   <header class="mh">
     <div class="mh-in">
@@ -45,8 +44,6 @@
   </main>
 
   <footer class="colophon">
-    <span class="colorbar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-    <span class="reg" aria-hidden="true"><i></i><b></b></span>
     <span>© {{ now.Year }} {{ site.Params.author }}</span>
     <span>Built {{ now.Format "2006.01.02" }}</span>
     <span class="links">
