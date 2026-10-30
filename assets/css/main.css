@@ -490,8 +490,8 @@ a.plate-link:hover .plate{transform:translateY(-3px);box-shadow:0 14px 26px -14p
 .chars .w{white-space:nowrap}
 .js-motion .chars .ch{
   display:inline-block;opacity:0;transform:translateY(.25em);color:var(--mute);
-  transition:opacity .5s ease,transform .7s var(--out),color .9s ease;
-  transition-delay:calc(var(--i) * 45ms + var(--d,0ms));
+  transition:opacity .3s ease,transform .45s var(--out),color .5s ease;
+  transition-delay:calc(var(--i) * 25ms + var(--d,0ms));
 }
 .js-motion .chars.in .ch{opacity:1;transform:none;color:inherit}
 .js-motion .chars .ch.bar{background:var(--ink);color:transparent;transition-property:opacity,transform}

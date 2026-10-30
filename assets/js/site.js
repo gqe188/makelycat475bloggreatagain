@@ -90,7 +90,7 @@
       var chs = h.querySelectorAll('.ch');
       chs.forEach(function (c) { c.classList.add('bar'); });
       whenSeen(h.closest('[data-rev]') || h, function () {
-        chs.forEach(function (c, j) { setTimeout(function () { c.classList.remove('bar'); }, 320 + j * 90); });
+        chs.forEach(function (c, j) { setTimeout(function () { c.classList.remove('bar'); }, 140 + j * 30); });
       });
     }
     // 不带 data-rev 的（镂空巨字）跟随所在的入场块一起触发
