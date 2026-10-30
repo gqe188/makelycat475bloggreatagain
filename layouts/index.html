@@ -1,111 +1,121 @@
 {{ define "main" }}
 {{ $posts := where site.RegularPages "Section" "posts" }}
 {{ $gallery := site.GetPage "/gallery" }}
+{{ $archive := site.GetPage "/posts" }}
 {{ $imgs := slice }}
 {{ with $gallery }}{{ $imgs = .Resources.ByType "image" }}{{ end }}
-{{ $latest := "—" }}
 {{ $newest := index $posts 0 }}
-{{ with $newest }}{{ $latest = .Date.Format "2006.01.02" }}{{ end }}
+{{ $chars := 0 }}
+{{ range $posts }}{{ $chars = add $chars (.Content | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | countrunes) }}{{ end }}
+{{ $mark := site.Params.h1 }}
+{{ $solid := replaceRE `[0-9]+$` "" $mark }}
+{{ $hollow := strings.TrimPrefix $solid $mark }}
 
-{{/* ── P.01 封面：一个大字锚点 + 规格表 + 报头照片的网点图版 ── */}}
-<section class="spread cover" aria-labelledby="cover-title">
-  {{ partial "cropmarks.html" }}
-  <span class="fold" aria-hidden="true"><em>FOLD</em></span>
-  <header class="rh" data-rev><span class="no">00</span><span class="ti">封面 · Cover</span><span class="en">{{ site.Params.name }}</span></header>
-  <p class="t-cap" data-rev style="--d:60ms">Records / 记录</p>
-  <h1 class="t-cover" id="cover-title" data-rev style="--d:120ms">{{ site.Params.h1 }}</h1>
-  <div class="g">
-    <div class="c1-7">
-      <p class="t-lead" data-rev style="--d:180ms">{{ site.Params.intro }}</p>
-      <dl class="spec" data-rev style="--d:240ms">
-        <dt>文章 Entries</dt><dd class="hot">{{ printf "%02d" (len $posts) }}</dd>
-        <dt>图版 Plates</dt><dd>{{ printf "%02d" (len $imgs) }}</dd>
-        <dt>最近 Latest</dt><dd>{{ $latest }}</dd>
-        <dt>作者 Author</dt><dd>{{ site.Params.author }}</dd>
-      </dl>
-    </div>
-    {{ with resources.Get "img/masthead.webp" }}
-    {{ $src := .Resize "1000x webp q80" }}
-    <figure class="c9-12 cover-plate" data-rev style="--d:300ms">
-      <span class="tape" aria-hidden="true"></span>
-      {{ with $newest }}
-      <a class="sticker" href="{{ .RelPermalink }}"><b>最新 · {{ partial "entry-no.html" . }}</b><span>{{ .Title }}</span><span class="mono">{{ .Date.Format "2006.01.02" }}</span></a>
-      {{ end }}
-      <a class="plate-link" href="{{ with $gallery }}{{ .RelPermalink }}{{ end }}" aria-label="报头照片，前往相册">
-        <div class="plate" style="aspect-ratio:{{ .Width }}/{{ .Height }}">
-          <span class="plate-tag">PL.00</span>
-          {{/* 先网点制版，再由清晰原片自上而下曝光覆盖，终态是原片 */}}
-          <canvas class="ht" data-src="{{ $src.RelPermalink }}" aria-hidden="true"></canvas>
-          {{ $sharp := .Resize "1400x webp q86" }}
-          <img class="plate-photo" src="{{ $src.RelPermalink }}" srcset="{{ $src.RelPermalink }} 1000w, {{ $sharp.RelPermalink }} 1400w" sizes="(max-width: 900px) calc(100vw - 72px), 360px" alt="报头照片" width="{{ $src.Width }}" height="{{ $src.Height }}" decoding="async">
-        </div>
-      </a>
-      <figcaption class="figcap"><b>PL.00</b></figcaption>
-    </figure>
-    {{ end }}
+{{/* ── 首屏：字段统计 / 字标（实心 + 空心） / 马克笔一句 / 按钮 / 右侧切角画框 ── */}}
+<section class="hero" data-hero>
+  <p class="meta ef-field">
+    {{ with $newest }}<time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006.01.02" }}</time>{{ end }}
+    <span><b data-fx-load>{{ len $posts }}</b> 篇</span>
+    <span><b data-fx-load>{{ len $imgs }}</b> 张照片</span>
+    <span><b data-fx-load>{{ lang.FormatNumber 0 $chars }}</b> 字</span>
+  </p>
+
+  <h1 class="ef-wordmark" aria-label="{{ $mark }}">
+    <span class="solid ef-in-drive" aria-hidden="true">{{ $solid }}</span>
+    {{ with $hollow }}<span class="hollow ef-in-drive" style="animation-delay: 140ms" aria-hidden="true">{{ . }}</span>{{ end }}
+  </h1>
+
+  <div class="copy">
+    <p class="claim"><span class="ef-marker ef-in-stroke">{{ site.Params.intro }}</span></p>
+    <p class="ef-actions">
+      {{ with $newest }}<a class="ef-btn go" href="{{ .RelPermalink }}">读最新一篇 <span class="sub">{{ partial "entry-no.html" . }}</span></a>{{ end }}
+      {{ with $archive }}<a class="ef-btn" href="{{ .RelPermalink }}">全部文章</a>{{ end }}
+      {{ with $gallery }}<a class="ef-btn" href="{{ .RelPermalink }}">相册</a>{{ end }}
+    </p>
   </div>
-  <div class="folio"><span>{{ site.Params.h1 }} / Cover</span><span>P.01 / 02</span></div>
+
+  {{ with resources.Get "img/masthead.webp" }}
+  {{ $a := .Resize "900x webp q82" }}{{ $b := .Resize "1400x webp q84" }}
+  <figure class="ef-frame ef-in-power" style="--i: 2">
+    <div class="window">
+      <img src="{{ $a.RelPermalink }}" srcset="{{ $a.RelPermalink }} 900w, {{ $b.RelPermalink }} 1400w" sizes="(max-width: 899px) 100vw, 40vw" alt="报头照片" width="{{ $a.Width }}" height="{{ $a.Height }}" fetchpriority="high">
+    </div>
+    <figcaption class="ef-plate">{{ site.Params.name }}</figcaption>
+  </figure>
+  {{ end }}
+
+  {{/* 最近文章滚动条：至少 4 篇才有意义 */}}
+  {{ if ge (len $posts) 4 }}
+  <div class="ef-ticker" aria-label="最近的文章">
+    <div class="track">
+      {{ range $k := slice 0 1 }}
+      <ul{{ if eq $k 1 }} aria-hidden="true"{{ end }}>
+        {{ range first 8 $posts }}<li><a href="{{ .RelPermalink }}"{{ if eq $k 1 }} tabindex="-1"{{ end }}><b>{{ partial "entry-no.html" . }}</b>{{ .Title }}</a></li>{{ end }}
+      </ul>
+      {{ end }}
+    </div>
+  </div>
+  {{ end }}
 </section>
 
-{{/* ── P.02 索引：文章目录 7 栏 + 相册小样 5 栏 ── */}}
-<section class="spread" aria-labelledby="index-title">
-  {{ partial "cropmarks.html" }}
-  <header class="rh" data-rev><span class="no">01</span><span class="ti" id="index-title">索引 · Index</span><span class="en">{{ len $posts }} entries / {{ len $imgs }} plates</span></header>
-  <div class="g">
-    <div class="c1-7">
-      <p class="index-count" data-rev aria-hidden="true"><span class="t-outline">01</span><span class="t-cap">索引 · Index</span></p>
-      <div class="sec-head">
-        <h2 class="t-h2">文章</h2>
-        <a href="{{ with site.GetPage "/posts" }}{{ .RelPermalink }}{{ end }}">全部归档 →</a>
-      </div>
-      <ol class="toc">
-        {{ range $i, $p := first 6 $posts }}
-          <li data-rev style="--d:{{ mul $i 70 }}ms">
-            <a href="{{ $p.RelPermalink }}">
-              <span class="no">{{ partial "entry-no.html" $p }}</span>
-              <span class="ti">{{ $p.Title }}</span>
-              <time class="dt" datetime="{{ $p.Date.Format "2006-01-02" }}">{{ $p.Date.Format "2006.01.02" }}</time>
-              {{ with $p.Summary | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | htmlUnescape | strings.TrimSpace }}<span class="sum">{{ . | truncate 90 }}</span>{{ end }}
-            </a>
-          </li>
-        {{ else }}
-          <li class="toc-empty">空空如也喵</li>
-        {{ end }}
-      </ol>
-    </div>
-    {{ with $gallery }}
-    <aside class="c9-12">
-      <div class="sec-head">
-        <h2 class="t-h2">相册</h2>
-        <a href="{{ .RelPermalink }}">全部 {{ len $imgs }} 张 →</a>
-      </div>
-      {{ if $imgs }}
-      <a class="contact plate-link" href="{{ .RelPermalink }}" aria-label="查看相册">
-        {{ range $i, $img := first 6 $imgs }}
-          {{ $t := $img.Fill "240x240 Center webp q76" }}
-          <div class="plate" data-rev style="--d:{{ mul $i 60 }}ms"><img src="{{ $t.RelPermalink }}" alt="" width="120" height="120" loading="lazy" decoding="async"></div>
-        {{ end }}
-      </a>
-      <p class="figcap"><b>PL.01–{{ printf "%02d" (len (first 6 $imgs)) }}</b><span>相册小样<br>Contact sheet</span></p>
-      {{ end }}
-      <p class="sidenote" style="margin-top:40px"><b>注 01</b>编号即次序：文章按发表时间记为 E.001 起，照片按文件顺序记为 PL.01 起。</p>
-    </aside>
+{{/* ── 最新一篇：空心大编号，指向时墨色灌满 ── */}}
+{{ with $newest }}
+{{ $no := partial "entry-no.html" . }}
+{{ $n := .Content | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | countrunes }}
+<section class="latest">
+  <a href="{{ .RelPermalink }}" data-fx-host>
+    <span class="ef-hollow-no" aria-hidden="true" data-fx>{{ strings.TrimPrefix "No." $no }}</span>
+    <span class="body">
+      <span class="ef-field"><span class="flag">最新</span> {{ .Date.Format "2006.01.02" }} │ {{ lang.FormatNumber 0 $n }} 字 │ 约 {{ .ReadingTime }} 分钟</span>
+      <span class="title">{{ .Title }}</span>
+      {{ with .Summary | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | htmlUnescape | strings.TrimSpace }}<span class="sum ef-read">{{ . | truncate 120 }}</span>{{ end }}
+      <span class="ef-btn go">阅读全文</span>
+    </span>
+  </a>
+</section>
+{{ end }}
+
+{{/* ── 索引 ── */}}
+<section class="block">
+  <p class="ef-eyebrow slash">Index</p>
+  <h2 class="ef-bar-title">全站索引</h2>
+  {{ if $posts }}
+  <ol class="ef-records">
+    {{ range $i, $p := first 8 $posts }}
+    {{ $n := $p.Content | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | countrunes }}
+    <li><a class="ef-record ef-in-come" style="--i: {{ $i }}" href="{{ $p.RelPermalink }}"><span class="ef-tag{{ if eq $i 0 }} is-current{{ end }}">{{ partial "entry-no.html" $p }}</span><time class="ef-field" datetime="{{ $p.Date.Format "2006-01-02" }}">{{ $p.Date.Format "2006.01.02" }}</time><span class="name ef-read">{{ $p.Title }}</span><span class="ef-field">{{ lang.FormatNumber 0 $n }} 字</span></a></li>
     {{ end }}
-  </div>
-  <div class="folio"><span>{{ site.Params.h1 }} / Index</span><span>P.02 / 02</span></div>
+  </ol>
+  {{ with $archive }}{{ if gt (len $posts) 8 }}<p class="more"><a class="ef-btn small" href="{{ .RelPermalink }}">全部 {{ len $posts }} 篇</a></p>{{ end }}{{ end }}
+  {{ else }}
+  <p class="ef-empty ef-read">空空如也喵</p>
+  {{ end }}
 </section>
 
-{{/* 开场装载序列：每个会话只在首页播一次；默认 hidden，由脚本决定是否启用 */}}
-<div class="boot" hidden aria-hidden="true" data-entries="{{ printf "%02d" (len $posts) }}" data-plates="{{ printf "%02d" (len $imgs) }}">
-  <div class="boot-lock"><b>{{ site.Params.h1 }}</b><small>Personal Records</small><span>Archive <b>Blog</b></span></div>
-  <svg class="boot-ring" viewBox="0 0 240 240">
-    <circle class="r1" cx="120" cy="120" r="110" pathLength="100"/>
-    <circle class="r2" cx="120" cy="120" r="44" pathLength="100"/>
-    <g class="orbit"><circle class="dot" cx="120" cy="47" r="3"/><circle class="dot" cx="120" cy="193" r="3"/></g>
-  </svg>
-  <p class="boot-msg"></p>
-  <div class="boot-welcome"><span>Welcome</span><b>{{ site.Params.h1 }}</b>{{ partial "catmark.html" "boot-mark" }}</div>
-  <div class="boot-foot"><span>Powered by <b>Hugo</b> <i></i></span></div>
-  <button class="boot-skip" type="button">Skip ›</button>
+{{/* ── 相册小样 ── */}}
+{{ with $gallery }}{{ if $imgs }}
+<section class="block">
+  <p class="ef-eyebrow slash">Plates</p>
+  <h2 class="ef-bar-title">相册</h2>
+  <div class="contact">
+    {{ range $i, $img := first 6 $imgs }}
+      {{ $t := $img.Fill "360x360 Center webp q78" }}
+      <a class="ef-in-come" style="--i: {{ $i }}" href="{{ $gallery.RelPermalink }}" aria-label="相册第 {{ add $i 1 }} 张"><img src="{{ $t.RelPermalink }}" alt="" width="180" height="180" loading="lazy" decoding="async"></a>
+    {{ end }}
+  </div>
+  <p class="more"><a class="ef-btn small" href="{{ .RelPermalink }}">全部 {{ len $imgs }} 张</a></p>
+</section>
+{{ end }}{{ end }}
+
+{{/* 启动页：首页、每个会话一次；进度来自真实加载，默认 hidden，由脚本决定是否启用 */}}
+<div class="boot" hidden aria-hidden="true">
+  <button class="ef-btn small skip-boot" type="button">跳过</button>
+  <div class="mark">
+    {{ partial "catmark.html" "boot-mark" }}
+    <p class="ef-wordmark"><span class="solid">{{ $mark }}</span></p>
+  </div>
+  <div class="ef-progress" style="--p: 0">
+    <span class="ef-eyebrow">Loading / 加载中</span><span class="ef-field readout">000%</span><i></i>
+  </div>
 </div>
 {{ end }}

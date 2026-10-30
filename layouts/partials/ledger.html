@@ -1,0 +1,12 @@
+{{/* 页边统计：全部是由内容算出的真实数字 */}}
+{{ $posts := where site.RegularPages "Section" "posts" }}
+{{ $chars := 0 }}
+{{ range $posts }}{{ $chars = add $chars (.Content | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | countrunes) }}{{ end }}
+{{ $imgs := slice }}
+{{ with site.GetPage "/gallery" }}{{ $imgs = .Resources.ByType "image" }}{{ end }}
+<ul class="ef-ledger">
+  <li><span>文章</span><span class="ef-field">{{ len $posts }} 篇</span></li>
+  <li><span>字数合计</span><span class="ef-field">{{ lang.FormatNumber 0 $chars }} 字</span></li>
+  <li><span>照片</span><span class="ef-field">{{ len $imgs }} 张</span></li>
+  {{ with $posts.ByLastmod.Reverse }}{{ with index . 0 }}<li><span>最近更新</span><span class="ef-field">{{ .Lastmod.Format "2006.01.02" }}</span></li>{{ end }}{{ end }}
+</ul>

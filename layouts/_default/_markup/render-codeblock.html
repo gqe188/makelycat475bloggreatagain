@@ -1,6 +1,6 @@
-{{/* 代码块：清单编号 LST.xx + 语言 + 行数（均由内容推出） */}}
+{{/* 代码块：清单编号 LST.xx │ 语言 │ 行数（均由内容推出） */}}
 {{ $lines := len (split (strings.TrimRight "\n" .Inner) "\n") }}
 <figure class="lst">
-  <figcaption class="lst-head"><b>LST.{{ printf "%02d" (add .Ordinal 1) }}</b><span>{{ .Type | default "text" }}</span><span class="lst-lines">{{ $lines }} 行</span></figcaption>
+  <figcaption class="lst-head ef-field"><b>LST.{{ printf "%02d" (add .Ordinal 1) }}</b><span>{{ .Type | default "text" }}</span><span>{{ $lines }} 行</span></figcaption>
   {{ (transform.HighlightCodeBlock .).Wrapped }}
 </figure>

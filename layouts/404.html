@@ -1,11 +1,11 @@
 {{ define "main" }}
-<section class="spread notfound" aria-labelledby="page-title">
-  {{ partial "cropmarks.html" }}
-  <header class="rh"><span class="no">404</span><span class="ti">未找到 · Not found</span><span class="en">{{ site.Params.name }}</span></header>
-  <p class="t-outline" aria-hidden="true">404</p>
-  <h1 class="t-h2" id="page-title">泥走错路了喵</h1>
-  <p class="t-lead">这里什么都没有喵</p>
-  <a class="btn" href="{{ site.Home.RelPermalink }}">← 回首页</a>
-  <div class="folio"><span>{{ site.Params.h1 }} / 404</span><span></span></div>
-</section>
+<div class="ef-spread">
+  <div class="ef-sheet lost">
+    <p class="ef-eyebrow slash">Not found</p>
+    <span class="ef-hollow-no" aria-hidden="true">404</span>
+    <h1 class="title ef-read">泥走错路了喵</h1>
+    <p class="ef-empty ef-read">这里什么都没有喵</p>
+    <p class="ef-actions" style="margin-top:1.5rem"><a class="ef-btn go" href="{{ site.Home.RelPermalink }}">回首页</a></p>
+  </div>
+</div>
 {{ end }}

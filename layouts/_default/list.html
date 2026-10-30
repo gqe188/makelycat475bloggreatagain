@@ -1,46 +1,44 @@
 {{ define "main" }}
 {{ $paginator := .Paginate .Pages }}
-<section class="spread" aria-labelledby="page-title">
-  {{ partial "cropmarks.html" }}
-  <header class="rh" data-rev><span class="no">01</span><span class="ti">归档 · Archive</span><span class="en">{{ len .Pages }} entries</span></header>
-  <div class="g">
-    <div class="c1-3">
-      <p class="index-count" data-rev aria-hidden="true"><span class="t-outline">01</span><span class="t-cap">归档 · Archive</span></p>
-      <h1 class="t-h1 page-title" id="page-title" data-rev>{{ .Title }}</h1>
-      {{ with .Content }}<div class="t-body" data-rev>{{ . }}</div>{{ end }}
-      <p class="sidenote" style="margin-top:40px" data-rev><b>注 01</b>按年份倒序排列；右侧为发表日期。</p>
-      {{ with index .Pages.ByLastmod.Reverse 0 }}<p class="archive-stamp" data-rev><span class="stamp">Rev. {{ .Lastmod.Format "2006.01.02" }}</span></p>{{ end }}
+<div class="ef-spread">
+  <div class="ef-sheet">
+    <p class="ef-eyebrow slash">Archive</p>
+    <div class="ef-sheet-head">
+      <h1>{{ .Title }}</h1>
+      <p class="ef-field">共 <b data-fx-load>{{ len .Pages }}</b> 篇</p>
     </div>
-    <div class="c4-12">
-      {{ range $paginator.Pages.GroupByDate "2006" }}
-      <section class="year">
-        <h2 class="year-no">{{ .Key }}</h2>
-        <ol class="toc">
-          {{ range $i, $p := .Pages }}
-            <li data-rev style="--d:{{ mul $i 70 }}ms">
-              <a href="{{ $p.RelPermalink }}">
-                <span class="no">{{ partial "entry-no.html" $p }}</span>
-                <span class="ti">{{ $p.Title }}</span>
-                <time class="dt" datetime="{{ $p.Date.Format "2006-01-02" }}">{{ $p.Date.Format "01.02" }}</time>
-                {{ with $p.Summary | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | htmlUnescape | strings.TrimSpace }}<span class="sum">{{ . | truncate 90 }}</span>{{ end }}
-              </a>
-            </li>
-          {{ end }}
-        </ol>
-      </section>
-      {{ else }}
-        <p class="toc-empty">空空如也喵</p>
-      {{ end }}
+    {{ with .Content }}<div class="ef-lede ef-read">{{ . }}</div>{{ end }}
 
-      {{ if gt $paginator.TotalPages 1 }}
-      <nav class="pager" aria-label="分页">
-        {{ with $paginator.Prev }}<a href="{{ .URL }}">← 新一点的</a>{{ else }}<span></span>{{ end }}
-        <span class="muted">{{ printf "%02d" $paginator.PageNumber }} / {{ printf "%02d" $paginator.TotalPages }}</span>
-        {{ with $paginator.Next }}<a href="{{ .URL }}">旧一点的 →</a>{{ else }}<span></span>{{ end }}
-      </nav>
+    {{ range $paginator.Pages.GroupByDate "2006" }}
+    <h2 class="ef-group-head"><span>{{ .Key }}</span><span class="ef-field">{{ len .Pages }} 篇</span></h2>
+    <ol class="ef-records">
+      {{ range $i, $p := .Pages }}
+      {{ $n := $p.Content | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | countrunes }}
+      <li><a class="ef-record ef-in-come" style="--i: {{ $i }}" href="{{ $p.RelPermalink }}"><span class="ef-tag">{{ partial "entry-no.html" $p }}</span><time class="ef-field" datetime="{{ $p.Date.Format "2006-01-02" }}">{{ $p.Date.Format "01.02" }}</time><span class="name ef-read">{{ $p.Title }}</span><span class="ef-field">{{ lang.FormatNumber 0 $n }} 字</span></a></li>
       {{ end }}
-    </div>
+    </ol>
+    {{ else }}
+    <p class="ef-empty ef-read">空空如也喵</p>
+    {{ end }}
+
+    {{ if gt $paginator.TotalPages 1 }}
+    <nav class="pager" aria-label="分页">
+      {{ with $paginator.Prev }}<a class="ef-btn small" href="{{ .URL }}">新一点的</a>{{ else }}<span></span>{{ end }}
+      <span class="ef-field">{{ printf "%02d" $paginator.PageNumber }} / {{ printf "%02d" $paginator.TotalPages }}</span>
+      {{ with $paginator.Next }}<a class="ef-btn small" href="{{ .URL }}">旧一点的</a>{{ else }}<span></span>{{ end }}
+    </nav>
+    {{ end }}
   </div>
-  <div class="folio"><span>{{ site.Params.h1 }} / Archive</span><span>P.{{ printf "%02d" $paginator.PageNumber }} / {{ printf "%02d" $paginator.TotalPages }}</span></div>
-</section>
+
+  <aside class="ef-margin" aria-label="统计">
+    <div class="toc">
+      <h2 class="margin-h ef-field">按年份</h2>
+      <ul class="ef-ledger">
+        {{ range .Pages.GroupByDate "2006" }}<li><span>{{ .Key }}</span><span class="ef-field">{{ len .Pages }} 篇</span></li>{{ end }}
+      </ul>
+      <h2 class="margin-h ef-field">全站</h2>
+      {{ partial "ledger.html" . }}
+    </div>
+  </aside>
+</div>
 {{ end }}

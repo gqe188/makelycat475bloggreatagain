@@ -1,57 +1,45 @@
 <!DOCTYPE html>
-<html lang="{{ site.Language.Locale }}">
+<html lang="{{ site.Language.Locale }}" data-ef-variant="standard">
 <head>
   {{ partial "head.html" . }}
   {{ if site.Params.holding }}<meta name="robots" content="noindex, nofollow">{{ end }}
 </head>
 {{ if site.Params.holding }}
-<body>
-  <main class="doc holding">
-    <section class="spread">
-      {{ partial "cropmarks.html" }}
-      <header class="rh"><span class="no">00</span><span class="ti">准备中 · Pending</span><span class="en">{{ site.Title }}</span></header>
-      <h1 class="t-display cjk">{{ site.Params.holdingTitle }}</h1>
-      <p class="t-lead" style="margin-top:24px">{{ site.Params.holdingNote }}</p>
-    </section>
+<body class="ef ef-contours">
+  <div class="ef-tri" aria-hidden="true"><i></i><i></i><i></i></div>
+  <main class="ef-sheet" style="max-width:calc(var(--ef-measure) + var(--ef-pad) * 2)">
+    <p class="ef-eyebrow slash">Pending</p>
+    <h1 class="title">{{ site.Params.holdingTitle }}</h1>
+    <p class="ef-empty ef-read">{{ site.Params.holdingNote }}</p>
   </main>
 </body>
 {{ else }}
-<body>
-  <a class="skip" href="#main">跳到正文</a>
-  <canvas class="helix" aria-hidden="true"></canvas>
+<body class="ef ef-contours">
+  <a class="skip ef-btn small" href="#main">跳到正文</a>
+  <div class="ef-tri ef-in-sweep" aria-hidden="true"><i></i><i></i><i></i></div>
 
-  <header class="mh">
-    <div class="mh-in">
-      {{/* 字标：猫猫头标记 + 三行字（大字名 / 通栏小字 / 细 + 粗） */}}
-      <a class="logo" href="{{ site.Home.RelPermalink }}" aria-label="{{ site.Params.name }} 首页">
-        {{ partial "catmark.html" "logo-mark" }}
-        <span class="lock"><b>{{ site.Params.h1 }}</b><small>Personal Records</small><span>Archive <b>Blog</b></span></span>
-      </a>
-      <nav class="mh-nav" aria-label="主导航">
-        {{ range $i, $m := site.Menus.main }}
-          {{ $u := $m.URL }}
-          {{ $cur := or (eq $u $.RelPermalink) (and $m.Page (or ($.IsDescendant $m.Page) (eq $.FirstSection $m.Page))) }}
-          <a href="{{ $u }}"{{ if $cur }} aria-current="page"{{ end }}><span class="en">{{ $m.Params.en | default $m.Name }}</span><span class="zh">{{ $m.Name }}</span></a>
-        {{ end }}
-      </nav>
-      <button class="theme-btn" type="button" aria-label="切换亮色 / 暗色"></button>
-    </div>
-    {{ if and .IsPage (eq .Section "posts") }}<div class="readbar" aria-hidden="true"></div>{{ end }}
-  </header>
+  <div class="shell">
+    <nav class="ef-rail rail" aria-label="主导航">
+      <a class="brand" href="{{ site.Home.RelPermalink }}" aria-label="{{ site.Params.name }} 首页">{{ partial "catmark.html" "rail-mark" }}<span>{{ site.Params.h1 }}</span></a>
+      <a href="{{ site.Home.RelPermalink }}"{{ if .IsHome }} aria-current="page"{{ end }}><span class="ef-eyebrow">Home</span><span>首页</span></a>
+      {{ range site.Menus.main }}
+        {{ $cur := or (eq .URL $.RelPermalink) (and .Page (or ($.IsDescendant .Page) (eq $.FirstSection .Page))) }}
+        <a href="{{ .URL }}"{{ if $cur }} aria-current="page"{{ end }}><span class="ef-eyebrow">{{ .Params.en | default .Name }}</span><span>{{ .Name }}</span></a>
+      {{ end }}
+      <button class="ef-btn small theme" type="button" data-theme-toggle aria-label="切换深浅色">深浅</button>
+    </nav>
 
-  <main id="main" class="doc">
-    {{ block "main" . }}{{ end }}
-  </main>
-
-  <footer class="colophon">
-    <span>© {{ now.Year }} {{ site.Params.author }}</span>
-    <span>Built {{ now.Format "2006.01.02" }}</span>
-    <span class="links">
-      <a href="{{ "index.xml" | relURL }}">RSS</a>
-      <a href="{{ "sitemap.xml" | relURL }}">Sitemap</a>
-    </span>
-    <span class="powered">Powered by <b>Hugo</b> <i aria-hidden="true"></i></span>
-  </footer>
+    <main id="main">
+      {{ block "main" . }}{{ end }}
+      <footer class="site-foot ef-field">
+        <span>© {{ now.Year }} {{ site.Params.author }}</span>
+        <span>构建 {{ now.Format "2006.01.02" }}</span>
+        <a href="{{ "index.xml" | relURL }}">RSS</a>
+        <a href="{{ "sitemap.xml" | relURL }}">Sitemap</a>
+        <span>Powered by Hugo</span>
+      </footer>
+    </main>
+  </div>
 
   {{ $js := resources.Get "js/site.js" | minify | fingerprint }}
   <script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>

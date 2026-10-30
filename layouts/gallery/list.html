@@ -1,59 +1,64 @@
 {{ define "main" }}
 {{ $imgs := .Resources.ByType "image" }}
-<section class="spread" aria-labelledby="page-title">
-  {{ partial "cropmarks.html" }}
-  <header class="rh" data-rev><span class="no">02</span><span class="ti">图版集 · Plates</span><span class="en">{{ len $imgs }} plates</span></header>
-  <div class="g">
-    <div class="c1-3 gallery-head">
-      <p class="index-count" data-rev aria-hidden="true"><span class="t-outline">02</span><span class="t-cap">图版集 · Plates</span></p>
-      <h1 class="t-h1 page-title" id="page-title" data-rev>{{ .Title }}</h1>
-      <p class="t-cap" data-rev>共 {{ len $imgs }} 张 · {{ len $imgs }} plates</p>
-      {{ with .Content }}<div class="t-body" data-rev>{{ . }}</div>{{ end }}
-      {{ if $imgs }}
-      <p class="sidenote" data-rev><b>注 01</b>点开图版看大图；← → 翻页，Esc 关闭。</p>
-      <p class="sidenote" data-rev><b>注 02</b>图注第二行为原片像素尺寸。</p>
+{{ $land := 0 }}{{ $port := 0 }}{{ $sq := 0 }}
+{{ range $imgs }}{{ if gt .Width .Height }}{{ $land = add $land 1 }}{{ else if lt .Width .Height }}{{ $port = add $port 1 }}{{ else }}{{ $sq = add $sq 1 }}{{ end }}{{ end }}
+<div class="ef-spread wide">
+  <div class="ef-sheet">
+    <p class="ef-eyebrow slash">Plates</p>
+    <div class="ef-sheet-head">
+      <h1>{{ .Title }}</h1>
+      <p class="ef-field">共 <b data-fx-load>{{ len $imgs }}</b> 张</p>
+    </div>
+    {{ with .Content }}<div class="ef-lede ef-read">{{ . }}</div>{{ end }}
+
+    {{ if $imgs }}
+    <div class="plates">
+      {{ range $i, $img := $imgs }}
+        {{ $no := printf "No.%02d" (add $i 1) }}
+        {{ $small := $img.Resize "640x webp q80" }}
+        {{ $large := $img.Resize "1200x webp q80" }}
+        {{ $xl := $img.Resize "2000x webp q82" }}
+        <figure class="ef-in-come" style="--i: {{ mod $i 6 }}">
+          <a class="shot" href="{{ $xl.RelPermalink }}" data-lb data-no="{{ $no }}" data-size="{{ $img.Width }} × {{ $img.Height }}" data-w="{{ $xl.Width }}" data-h="{{ $xl.Height }}" aria-label="查看大图 {{ $no }}">
+            <img src="{{ $large.RelPermalink }}"
+                 srcset="{{ $small.RelPermalink }} 640w, {{ $large.RelPermalink }} 1200w"
+                 sizes="(max-width: 559px) calc(100vw - 2rem), (max-width: 959px) 45vw, 30vw"
+                 alt="" width="{{ $large.Width }}" height="{{ $large.Height }}" loading="lazy" decoding="async">
+          </a>
+          <figcaption><span class="ef-tag">{{ $no }}</span><span class="ef-field">{{ $img.Width }} × {{ $img.Height }}</span></figcaption>
+        </figure>
       {{ end }}
     </div>
-    <div class="c4-12">
-      {{ if $imgs }}
-      <div class="plates">
-        {{ range $i, $img := $imgs }}
-          {{ $no := printf "PL.%02d" (add $i 1) }}
-          {{ $small := $img.Resize "640x webp q80" }}
-          {{ $large := $img.Resize "1200x webp q80" }}
-          {{ $xl := $img.Resize "2000x webp q82" }}
-          <figure data-rev style="--d:{{ mul (mod $i 4) 70 }}ms">
-            <a class="plate-link" href="{{ $xl.RelPermalink }}" data-lb data-no="{{ $no }}" data-size="{{ $img.Width }} × {{ $img.Height }}" data-w="{{ $xl.Width }}" data-h="{{ $xl.Height }}" aria-label="查看大图 {{ $no }}">
-              <div class="plate">
-                <img src="{{ $large.RelPermalink }}"
-                     srcset="{{ $small.RelPermalink }} 640w, {{ $large.RelPermalink }} 1200w"
-                     sizes="(max-width: 520px) calc(100vw - 72px), (max-width: 900px) calc(50vw - 46px), 400px"
-                     alt="" width="{{ $large.Width }}" height="{{ $large.Height }}" loading="lazy" decoding="async">
-              </div>
-            </a>
-            <figcaption class="figcap"><b>{{ $no }}</b><span>第 {{ printf "%02d" (add $i 1) }} 张 / 共 {{ len $imgs }} 张<br><span class="mono">{{ $img.Width }} × {{ $img.Height }} px</span></span></figcaption>
-          </figure>
-        {{ end }}
-      </div>
-      {{ else }}
-      <p class="toc-empty">空空如也喵</p>
-      {{ end }}
-    </div>
+    {{ else }}
+    <p class="ef-empty ef-read">空空如也喵</p>
+    {{ end }}
   </div>
-  <div class="folio"><span>{{ site.Params.h1 }} / Plates</span><span>PL.01–{{ printf "%02d" (len $imgs) }}</span></div>
-</section>
+
+  <aside class="ef-margin" aria-label="统计">
+    <div class="toc">
+      <h2 class="margin-h ef-field">按画幅</h2>
+      <ul class="ef-ledger">
+        <li><span>横幅</span><span class="ef-field">{{ $land }} 张</span></li>
+        <li><span>竖幅</span><span class="ef-field">{{ $port }} 张</span></li>
+        <li><span>方形</span><span class="ef-field">{{ $sq }} 张</span></li>
+      </ul>
+      <h2 class="margin-h ef-field">全站</h2>
+      {{ partial "ledger.html" . }}
+    </div>
+  </aside>
+</div>
 
 {{ if $imgs }}
 <dialog class="lb" aria-label="大图">
   <div class="lb-in">
     <div class="lb-bar">
-      <span class="lb-no"></span><span class="lb-meta mono"></span>
-      <button class="lb-close" type="button" data-lb-close>关闭 ESC</button>
+      <span class="ef-tag is-current lb-no"></span><span class="ef-field lb-meta"></span>
+      <button class="ef-btn small" type="button" data-lb-close>关闭</button>
     </div>
     <div class="lb-stage"><img alt=""></div>
     <div class="lb-nav">
-      <button type="button" data-lb-step="-1">← 上一张</button>
-      <button type="button" data-lb-step="1">下一张 →</button>
+      <button class="ef-btn small" type="button" data-lb-step="-1">上一张</button>
+      <button class="ef-btn small" type="button" data-lb-step="1">下一张</button>
     </div>
   </div>
 </dialog>

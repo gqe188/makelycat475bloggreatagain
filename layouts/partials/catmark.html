@@ -1,10 +1,10 @@
-{{/* 猫猫头标记：-_- 冷脸 + 两道腮红。
-   线稿跟随 currentColor，腮红跟随 --accent（浅色橙 / 深色青）。传入 class 名。 */}}
+{{/* 猫猫头标记：实心墨色头 + 纸色 -_- 冷脸，两颊各一道 45° 斜线（呼应斜线纹）。
+   颜色跟随 --ef-ink / --ef-paper，深浅色自动切换。传入 class 名。 */}}
 <svg class="catmark {{ . }}" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-  <g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="miter" stroke-linecap="square">
-    <path class="cm-head" pathLength="100" d="M7 9 L22 20.5 H42 L57 9 V35 C57 49.5 46 57.5 32 57.5 C18 57.5 7 49.5 7 35 Z"/>
-    <path class="cm-eyes" d="M15 37h11M38 37h11"/>
-    <path class="cm-mouth" d="M28 46h8"/>
+  <path class="cm-head" d="M4 5 L21 18 H43 L60 5 V36 C60 51 48 60 32 60 C16 60 4 51 4 36 Z" fill="var(--ef-ink)"/>
+  <g fill="none" stroke="var(--ef-paper)" stroke-linecap="square">
+    <path class="cm-eyes" d="M13 36h12M39 36h12" stroke-width="4.5"/>
+    <path class="cm-mouth" d="M28 47h8" stroke-width="4"/>
+    <path class="cm-blush" d="M11 45l4-4M49 45l4-4" stroke-width="2"/>
   </g>
-  <path class="cm-blush" d="M12 43l3-2M15 44l3-2M46 43l3-2M49 44l3-2" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="square"/>
 </svg>

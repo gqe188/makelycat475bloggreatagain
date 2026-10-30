@@ -3,64 +3,67 @@
 {{/* 字数不计图注与清单标签 */}}
 {{ $chars := .Content | replaceRE `(?s)<figcaption.*?</figcaption>` "" | plainify | countrunes }}
 {{ $no := cond $isPost (partial "entry-no.html" .) "" }}
-<article class="spread" aria-labelledby="page-title">
-  {{ partial "cropmarks.html" }}
-  <header class="rh" data-rev>
-    {{ if $isPost }}<span class="no">{{ $no }}</span><span class="ti">文章 · Entry</span>
-    {{ else }}{{ $mno := "" }}{{ range $i, $m := site.Menus.main }}{{ if and $m.Page (eq $m.Page.RelPermalink $.RelPermalink) }}{{ $mno = printf "%02d" (add $i 1) }}{{ end }}{{ end }}
-    {{ with $mno }}<span class="no">{{ . }}</span>{{ end }}<span class="ti">{{ .Title }}{{ with .Section }} · {{ . }}{{ end }}</span>{{ end }}
-    <span class="en">{{ site.Params.author }}</span>
-  </header>
-
-  <header class="post-head g">
-    <div class="c1-7">
-      <h1 class="t-display cjk" id="page-title" data-rev>{{ .Title }}</h1>
-    </div>
-    {{ if not .Date.IsZero }}
-    <dl class="spec c9-12" data-rev style="--d:80ms">
-      {{ if $isPost }}<dt>编号 No.</dt><dd class="hot">{{ $no }}</dd>{{ end }}
-      <dt>日期 Date</dt><dd><time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006.01.02" }}</time></dd>
-      {{ with .Params.tags }}<dt>标签 Tags</dt><dd>{{ delimit . " / " }}</dd>{{ end }}
-      <dt>字数 Length</dt><dd>{{ $chars }}</dd>
-      {{ if ne (.Lastmod.Format "2006-01-02") (.Date.Format "2006-01-02") }}<dt>修订 Rev.</dt><dd>{{ .Lastmod.Format "2006.01.02" }}</dd>{{ end }}
-    </dl>
+<article class="ef-spread">
+  <div class="ef-sheet">
+    {{ if $isPost }}
+    <p class="ef-eyebrow slash">Records</p>
+    <p class="ef-crumb ef-field">{{ with site.GetPage "/posts" }}<a href="{{ .RelPermalink }}">全部文章</a>{{ end }}<span>{{ $no }}</span></p>
+    <p class="ids">
+      <span class="ef-tag is-current">{{ $no }}</span>
+      {{ range .Params.tags }}<span class="ef-kv"><span>标签</span><span>{{ . }}</span></span>{{ end }}
+    </p>
+    <ul class="ef-facts ef-field">
+      <li><time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006.01.02" }}</time></li>
+      <li>{{ lang.FormatNumber 0 $chars }} 字</li>
+      <li>约 {{ .ReadingTime }} 分钟</li>
+      {{ if ne (.Lastmod.Format "2006-01-02") (.Date.Format "2006-01-02") }}<li>修订 {{ .Lastmod.Format "2006.01.02" }}</li>{{ end }}
+    </ul>
+    {{ else }}
+    <p class="ef-eyebrow slash">{{ with site.Menus.main }}{{ range . }}{{ if and .Page (eq .Page.RelPermalink $.RelPermalink) }}{{ .Params.en }}{{ end }}{{ end }}{{ end }}</p>
     {{ end }}
-  </header>
 
-  <div class="g">
-    <div class="c1-7">
-      <div class="prose" data-rev style="--d:140ms">
-        {{ .Content }}
-      </div>
-      {{ with .Params.github }}
-      <p class="page-cta"><a class="btn" href="{{ . }}" rel="me noopener" target="_blank">GitHub ↗ <small>{{ strings.TrimPrefix "https://" . }}</small></a></p>
-      {{ end }}
-      {{ if $isPost }}
-      <div class="sign" data-rev>
-        <span class="stamp">{{ site.Params.signNote }}</span>
-      </div>
-      {{ end }}
+    <h1 class="title ef-read">{{ .Title }}</h1>
+    <div class="ef-tri ef-in-sweep" aria-hidden="true"><i></i><i></i><i></i></div>
+
+    <div class="ef-prose">
+      {{ .Content }}
     </div>
-    {{ $toc := .TableOfContents }}
-    {{ if or (gt (len (findRE "<li>" $toc)) 1) $isPost }}
-    <aside class="c9-12 side" data-rev style="--d:200ms">
-      {{ if gt (len (findRE "<li>" $toc)) 1 }}
-      <div class="sidenote"><b>目录</b>Contents{{ $toc }}</div>
-      {{ end }}
-      {{ if $isPost }}
-      <p class="sidenote"><b>注</b>本篇正文 {{ $chars }} 字{{ with .ReadingTime }}，约 {{ . }} 分钟读完{{ end }}。</p>
-      {{ end }}
-    </aside>
+
+    {{ with .Params.github }}
+    <p class="ef-actions" style="margin-top:2rem"><a class="ef-btn go" href="{{ . }}" rel="me noopener" target="_blank">GitHub <span class="sub">{{ strings.TrimPrefix "https://" . }}</span></a></p>
+    {{ end }}
+
+    {{ if $isPost }}
+    <p class="sign ef-field">{{ site.Params.signNote }}</p>
+    {{ if or .PrevInSection .NextInSection }}
+    <h2 class="ef-group-head"><span>相邻文章</span><span class="ef-field">{{ add (cond (ne .PrevInSection nil) 1 0) (cond (ne .NextInSection nil) 1 0) }} 篇</span></h2>
+    <ol class="ef-records">
+      {{ range $k, $p := slice .PrevInSection .NextInSection }}{{ with $p }}
+      <li><a class="ef-record" href="{{ .RelPermalink }}"><span class="ef-tag">{{ partial "entry-no.html" . }}</span><time class="ef-field" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006.01.02" }}</time><span class="name ef-read">{{ .Title }}</span><span class="ef-field">{{ cond (eq $k 0) "上一篇" "下一篇" }}</span></a></li>
+      {{ end }}{{ end }}
+    </ol>
+    {{ end }}
     {{ end }}
   </div>
 
-  {{ if and $isPost (or .PrevInSection .NextInSection) }}
-  <nav class="post-nav" aria-label="上一篇 / 下一篇">
-    {{ with .PrevInSection }}<a href="{{ .RelPermalink }}"><span class="t-micro">← 上一篇 · {{ partial "entry-no.html" . }}</span><span>{{ .Title }}</span></a>{{ end }}
-    {{ with .NextInSection }}<a class="next" href="{{ .RelPermalink }}"><span class="t-micro">下一篇 · {{ partial "entry-no.html" . }} →</span><span>{{ .Title }}</span></a>{{ end }}
-  </nav>
-  {{ end }}
-
-  <div class="folio"><span>{{ site.Params.h1 }} / {{ cond $isPost $no .Title }}</span><span>{{ if not .Date.IsZero }}{{ .Date.Format "2006.01.02" }}{{ end }}</span></div>
+  <aside class="ef-margin" aria-label="目录与统计">
+    <div class="toc">
+      {{ $toc := .TableOfContents }}
+      {{ if gt (len (findRE "<li>" $toc)) 1 }}
+      <h2 class="margin-h ef-field">目录</h2>
+      {{ $toc }}
+      {{ end }}
+      {{ if $isPost }}
+      <h2 class="margin-h ef-field">本篇</h2>
+      <ul class="ef-ledger">
+        <li><span>编号</span><span class="ef-field">{{ $no }}</span></li>
+        <li><span>字数</span><span class="ef-field">{{ lang.FormatNumber 0 $chars }} 字</span></li>
+        <li><span>阅读</span><span class="ef-field">约 {{ .ReadingTime }} 分钟</span></li>
+      </ul>
+      {{ end }}
+      <h2 class="margin-h ef-field">全站</h2>
+      {{ partial "ledger.html" . }}
+    </div>
+  </aside>
 </article>
 {{ end }}

@@ -2,8 +2,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} · {{ site.Title }}{{ end }}</title>
 <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ site.Params.intro }}{{ end }}">
-<meta name="theme-color" content="#f6f3eb" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#121211" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f4f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191919" media="(prefers-color-scheme: dark)">
 {{/* 分享卡片：用报头照片裁出 1200×630 */}}
 {{ $ogDesc := or .Description site.Params.intro }}
 {{ $ogTitle := cond .IsHome site.Title (printf "%s · %s" .Title site.Title) }}
@@ -27,15 +27,19 @@
 <meta name="twitter:description" content="{{ $ogDesc }}">
 <link rel="canonical" href="{{ .Permalink }}">
 <script>
-  // 首屏前应用已保存的主题，避免闪色；未减弱动效时才开启入场
+  // 首屏前应用已保存的主题，避免闪色；标记脚本可用（入场动画等它放行）
   (function () {
     try {
       var t = localStorage.getItem('theme');
       if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
     } catch (e) {}
-    if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      document.documentElement.classList.add('js-motion');
-    }
+    var h = document.documentElement;
+    h.classList.add('js');
+    // 启动页：只在首页、每个会话第一次、未减弱动效时播放；首帧前就盖住，避免先闪出内容
+    try {
+      var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!calm && location.pathname === '{{ site.Home.RelPermalink }}' && sessionStorage.getItem('ef-boot') !== '1') h.classList.add('booting');
+    } catch (e) {}
   })();
 </script>
 {{ with resources.Get "favicon.svg" | fingerprint }}<link rel="icon" href="{{ .RelPermalink }}" type="image/svg+xml">{{ end }}
@@ -43,6 +47,7 @@
 {{ with site.Home.OutputFormats.Get "rss" }}
 <link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}" title="{{ site.Title }}">
 {{ end }}
-<link rel="preload" href="{{ "fonts/jetbrains-mono-400.woff2" | relURL }}" as="font" type="font/woff2" crossorigin>
-{{ $css := resources.Get "css/main.css" | minify | fingerprint }}
+<link rel="preload" href="{{ "fonts/saira-latin.woff2" | relURL }}" as="font" type="font/woff2" crossorigin>
+{{/* endfield.css 是终末地套件原样，blog.css 只放本站骨架与部件 */}}
+{{ $css := slice (resources.Get "css/endfield.css") (resources.Get "css/blog.css") | resources.Concat "css/site.css" | minify | fingerprint }}
 <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">

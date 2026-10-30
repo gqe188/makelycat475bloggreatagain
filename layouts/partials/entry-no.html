@@ -1,6 +1,6 @@
-{{/* 文章编号 = 按发表时间从旧到新的序号，E.001 起；编号来自真实次序，不是装饰 */}}
+{{/* 文章编号 = 按发表时间从旧到新的序号，No.001 起；编号来自真实次序，不是装饰 */}}
 {{ $no := "" }}
 {{ range $i, $p := (where site.RegularPages "Section" "posts").ByDate }}
-  {{ if eq $p.RelPermalink $.RelPermalink }}{{ $no = printf "E.%03d" (add $i 1) }}{{ end }}
+  {{ if eq $p.RelPermalink $.RelPermalink }}{{ $no = printf "No.%03d" (add $i 1) }}{{ end }}
 {{ end }}
 {{ return $no }}
