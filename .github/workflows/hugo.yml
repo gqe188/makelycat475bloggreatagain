@@ -1,10 +1,14 @@
-# 构建 Hugo 站点并发布到 GitHub Pages
+# 同时发布三个版本到同一个 GitHub Pages 站点，分子目录访问：
+#   /            原版（main 分支，只读取，不修改 main）
+#   /rhine/      莱茵生命版（rhine-lab-redesign 分支）
+#   /endfield/   终末地版（endfield-redesign 分支）
+# 任一重写分支推送都会重新构建全部三个版本。两个重写分支里放的是同一份本文件。
 # 仓库 Settings → Pages → Source 需选 “GitHub Actions”
-name: Deploy Hugo site to Pages
+name: Deploy all versions to Pages
 
 on:
   push:
-    branches: ["main", "rhine-lab-redesign"]
+    branches: ["rhine-lab-redesign", "endfield-redesign"]
   workflow_dispatch:
 
 permissions:
@@ -33,17 +37,41 @@ jobs:
         run: |
           wget -O ${{ runner.temp }}/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb
           sudo dpkg -i ${{ runner.temp }}/hugo.deb
-      - name: Checkout
+      - name: Checkout original (main)
         uses: actions/checkout@v4
+        with:
+          ref: main
+          path: src/original
+      - name: Checkout Rhine Lab version
+        uses: actions/checkout@v4
+        with:
+          ref: rhine-lab-redesign
+          path: src/rhine
+      - name: Checkout Endfield version
+        uses: actions/checkout@v4
+        with:
+          ref: endfield-redesign
+          path: src/endfield
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
-      - name: Build with Hugo
+      - name: Patch original for a sub-path (build copy only)
+        # 原版是按根域名写的：模板里 "/xxx" | relURL、样式表里 /fonts/、脚本里 /vendor/ 都指向域名根。
+        # 这里只改构建用的副本，让它们跟着 Pages 的子路径走；main 分支本身不变。
+        working-directory: src/original
+        run: |
+          grep -rlE '"/[^"]*" \| relURL' layouts | xargs -r sed -i -E 's#\{\{ "/([^"]*)" \| relURL \}\}#{{ "\1" | relURL }}#g'
+          sed -i 's#url("/fonts/#url("../fonts/#g' assets/css/main.css
+          sed -i "s#'/vendor/#'${{ steps.pages.outputs.base_path }}/vendor/#g" static/js/site.js
+      - name: Build all versions
         env:
           HUGO_CACHEDIR: ${{ runner.temp }}/hugo_cache
-        # baseURL 取 Pages 的实际地址（含 /仓库名/ 子路径），不改 hugo.toml
         run: |
-          hugo --gc --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
+          BASE="${{ steps.pages.outputs.base_url }}"
+          OUT="$GITHUB_WORKSPACE/public"
+          (cd src/original && hugo --gc --minify --baseURL "$BASE/"          -d "$OUT")
+          (cd src/rhine    && hugo --gc --minify --baseURL "$BASE/rhine/"    -d "$OUT/rhine")
+          (cd src/endfield && hugo --gc --minify --baseURL "$BASE/endfield/" -d "$OUT/endfield")
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
